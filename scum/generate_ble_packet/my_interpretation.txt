@@ -1,0 +1,44 @@
+//digital packet
+***ALL LSB first except seeds
+
+Pre-preamble
+000111
+
+Preamble
+01010101
+
+AA
+01101011011111011001000101110001
+
+PDU header
+0100000000001000
+
+advertiser address
+(new)011000110000000101001100010011100100000000000000
+(old)100110010100100110001101110101111110101100001001
+
+PDU data1
+0x02	01000000
+0x01	10000000
+0x05	10100000
+
+PDU data2
+0x06	01100000
+0x08	00010000
+0x53	11001010
+0x43	11000010
+0x55	10101010
+0x4D	10110010
+0x33	11001100
+
+CRC seed
+101010101010101010101010
+LSB------------------MSB for interpretation
+pos0---------------pos23 in spec
+software written as sequence
+
+Whitening seed
+1100101
+1MSBLSB for interpretation
+pos0pos6 in spec
+software written as sequence
