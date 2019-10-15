@@ -14,17 +14,19 @@ const unsigned char BACCESS_ADDRESS3 = 0x91;
 const unsigned char BACCESS_ADDRESS4 = 0x71;
 
 const unsigned char PDU_HEADER1 = 0x40;
-const unsigned char PDU_HEADER2 = 0xA4; // pdu is 37 bytes long (6 bytes adv address + 7 bytes name + 24 bytes data)
+const unsigned char PDU_HEADER2 = 0xA4; // pdu is 37 bytes long (6 bytes adv address + 7 bytes name + 4 bytes temp + 4 bytes LC freq + 16 bytes data)
 const unsigned char NAME_HEADER1 = 0x60; // name is 6 bytes long (1 byte GAP code + 5 bytes data)
 const unsigned char NAME_HEADER2 = 0x10;
+const unsigned char LC_FREQ_HEADER1 = 0xC0; // LC freq is 3 bytes long (1 byte GAP code + 2 bytes data)
+const unsigned char LC_FREQ_HEADER2 = 0x03; // custom GAP code for LC freq (0xC0 LSB first)
 const unsigned char TEMP_HEADER1 = 0xC0; // temp is 3 bytes long (1	byte GAP code + 2 bytes data)
-const unsigned char TEMP_HEADER2 = 0x03; // custom GAP code for temperature (0xC0 LSB first)
-const unsigned char DATA_HEADER1 = 0xC8; // data is 19 bytes long (1 byte GAP code + 18 bytes data)
+const unsigned char TEMP_HEADER2 = 0x83; // custom GAP code for temperature (0xC1 LSB first)
+const unsigned char DATA_HEADER1 = 0xF0; // data is 15 bytes long (1 byte GAP code + 14 bytes data)
 const unsigned char DATA_HEADER2 = 0x0B; // custom defined for data (0xD0 LSB first)
 
 const unsigned int PDU_LENGTH = 39; // pdu is 39 bytes long
 const unsigned int ADVA_LENGTH = 6; // adv address is 6 bytes long
-const unsigned int DATA_LENGTH = 18; // data is 22 bytes long
+const unsigned int DATA_LENGTH = 14; // data is 18 bytes long
 const unsigned int CRC_LENGTH = 3; // crc is 3 bytes long
 
 extern unsigned int ASC[38];
@@ -41,25 +43,25 @@ extern unsigned int RC2M_superfine;
 
 extern double temp;
 
-void gen_ble_packet(unsigned char *packet, unsigned char *AdvA, unsigned char channel) {
+void gen_ble_packet(uint8_t *packet, uint8_t *AdvA, uint8_t channel, uint16_t LC_freq) {
 	
 	double k_temp; // Temperature in Kelvin
-	uint16_t temp_payload; // Floating point error
+	uint16_t temp_payload;
 	
 	int byte1;
 	int i;
 	int bit2;
-	unsigned char common;
-	unsigned char crc3 = 0xAA;
-	unsigned char crc2 = 0xAA;
-	unsigned char crc1 = 0xAA;
+	uint8_t common;
+	uint8_t crc3 = 0xAA;
+	uint8_t crc2 = 0xAA;
+	uint8_t crc1 = 0xAA;
 	
-	unsigned char pdu_crc[PDU_LENGTH + CRC_LENGTH];
-	unsigned char *pdu_pointer = pdu_crc;
-	unsigned char *crc_pointer = pdu_crc;
-	unsigned char *byte_addr = pdu_crc;
+	uint8_t pdu_crc[PDU_LENGTH + CRC_LENGTH];
+	uint8_t *pdu_pointer = pdu_crc;
+	uint8_t *crc_pointer = pdu_crc;
+	uint8_t *byte_addr = pdu_crc;
 	
-	unsigned char lfsr = channel | 0x40; // [1 channel[6]]
+	uint8_t lfsr = channel | 0x40; // [1 channel[6]]
 		
 	*packet = BPREAMBLE;
 	packet++;
@@ -99,6 +101,15 @@ void gen_ble_packet(unsigned char *packet, unsigned char *AdvA, unsigned char ch
 	*pdu_pointer = flipChar(0x33); // 3
 	pdu_pointer++;
 	
+	*pdu_pointer = LC_FREQ_HEADER1;
+	pdu_pointer++;
+	*pdu_pointer = LC_FREQ_HEADER2;
+	pdu_pointer++;
+	*pdu_pointer = flipChar((LC_freq >> 8) & 0xFF); // LC freq MSB
+	pdu_pointer++;
+	*pdu_pointer = flipChar(LC_freq & 0xFF); // LC freq LSB
+	pdu_pointer++;
+	
 	*pdu_pointer = TEMP_HEADER1;
 	pdu_pointer++;
 	*pdu_pointer = TEMP_HEADER2;
@@ -107,7 +118,7 @@ void gen_ble_packet(unsigned char *packet, unsigned char *AdvA, unsigned char ch
 	k_temp = temp + 273.15; // Temperature in Kelvin
 	temp_payload = 100 * k_temp + 1; // Floating point error
 	
-	*pdu_pointer = flipChar((temp_payload & 0xFF00) >> 8); // Temperature MSB
+	*pdu_pointer = flipChar((temp_payload >> 8) & 0xFF); // Temperature MSB
 	pdu_pointer++;
 	*pdu_pointer = flipChar(temp_payload & 0xFF); // Temperature LSB
 	pdu_pointer++;
@@ -126,8 +137,8 @@ void gen_ble_packet(unsigned char *packet, unsigned char *AdvA, unsigned char ch
 	crc_pointer = pdu_pointer;
 	byte_addr = pdu_crc;
 	
-	for (i=0; i < PDU_LENGTH; byte_addr++, i++) {
-		for (bit2 = 7; bit2 >= 0; bit2--) {
+	for (i = 0; i < PDU_LENGTH; byte_addr++, ++i) {
+		for (bit2 = 7; bit2 >= 0; --bit2) {
 			common = (crc1 & 1) ^ ((*byte_addr & (1 << bit2)) >> bit2);
 			crc1 = (crc1 >> 1) | ((crc2 & 1) << 7);
 			crc2 = ((crc2 >> 1) | ((crc3 & 1) << 7)) ^ (common << 6) ^ (common << 5);
@@ -145,15 +156,15 @@ void gen_ble_packet(unsigned char *packet, unsigned char *AdvA, unsigned char ch
 	
 	byte_addr = pdu_crc;
 	
-	for (i = 0; i < PDU_LENGTH + CRC_LENGTH; byte_addr++, i++) {
-		for (bit2 = 7; bit2 >= 0; bit2--) {
+	for (i = 0; i < PDU_LENGTH + CRC_LENGTH; ++byte_addr, ++i) {
+		for (bit2 = 7; bit2 >= 0; --bit2) {
 			*byte_addr = (*byte_addr & ~(1 << bit2)) | ((*byte_addr & (1 << bit2)) ^ ((lfsr & 1) << bit2));
 			lfsr = ((lfsr >> 1) | ((lfsr & 1) << 6)) ^ ((lfsr & 1) << 2);
 		}
 	}
 
 	byte_addr = pdu_crc;
-	for (i = 0; i < PDU_LENGTH + CRC_LENGTH; byte_addr++, i++) {
+	for (i = 0; i < PDU_LENGTH + CRC_LENGTH; ++byte_addr, ++i) {
 		*packet = *byte_addr;
 		packet++;
 	}
@@ -254,7 +265,7 @@ void gen_test_ble_packet(unsigned char *packet) {
 }
 */
 
-void gen_test_ble_packet(unsigned char *packet) {	
+void gen_test_ble_packet(uint8_t *packet) {
 	*packet = 0x1D;
 	packet++;
 	*packet = 0x55;
@@ -504,8 +515,7 @@ void initialize_mote_ble(){
 	GPI_control(0,0,0,0);
 	
 	// Select banks for GPIO outputs
-	// GPO_control(4,6,6,10);
-	GPO_control(4,4,4,4);
+	GPO_control(4,6,6,10);
 	
 	// Set all GPIOs as outputs
 	GPI_enables(0x0000);	

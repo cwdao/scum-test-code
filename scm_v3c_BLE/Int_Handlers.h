@@ -69,32 +69,9 @@ extern unsigned short do_debug_print;
 
 extern double temp;
 unsigned int count_2M, count_LC, count_32k;
-unsigned int previous_count_LC;
 double ratio;
 unsigned int code;
-
-extern char start_LC_sweep;
 extern unsigned int LC_sweep_code;
-extern unsigned int LC_monotonic_sweep_code;
-extern unsigned int LC_monotonic_sweep_index;
-extern unsigned int LC_monotonic_codes_length;
-extern unsigned int LC_monotonic_codes[2119];
-
-extern char found_coarse_codes;
-extern char coarse_code_iteration;
-extern char coarse_codes[32];
-extern char coarse_codes_length;
-
-extern char pass;
-extern char mid0_iteration;
-extern unsigned int mid0_codes[32];
-
-extern char coarse0_iteration;
-extern unsigned int coarse0_codes[32];
-extern unsigned int cumulative_coarse0_codes[32];
-
-extern char calibration_hysteresis;
-extern char LC_calibration_finished;
 
 int char_to_int(char c) {
 	switch (c) {
@@ -616,98 +593,7 @@ void RFTIMER_ISR() {
 		ICER = 0x0080;
 		
 		RFTIMER_REG__COMPARE7_CONTROL = 0x00;
-				
-		// Disable all counters
-		ANALOG_CFG_REG__0 = 0x007F;
-			
-		// Read LC_div counter (via counter4)
-		rdata_lsb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x280000);
-		rdata_msb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x2C0000);
-		count_LC = rdata_lsb + (rdata_msb << 16);
-		
-		printf("Sweep: coarse: %d, mid: %d, fine: %d, count_LC: %d\n",
-		       (LC_monotonic_sweep_code & 0x7C00) >> 10,
-				 	 (LC_monotonic_sweep_code & 0x3E0) >> 5,
-				   LC_monotonic_sweep_code & 0x1F,
-					 count_LC);
-		
-		++LC_monotonic_sweep_index;
-		if (LC_monotonic_sweep_index != LC_monotonic_codes_length) {
-			LC_monotonic_sweep_code = LC_monotonic_codes[LC_monotonic_sweep_index];
-			LC_FREQCHANGE((LC_monotonic_sweep_code & 0x7C00) >> 10,
-									(LC_monotonic_sweep_code & 0x3E0) >> 5,
-									LC_monotonic_sweep_code & 0x1F);
-			
-			// Enable RF timer interrupt
-			ISER = 0x0080;
-
-			RFTIMER_REG__CONTROL = 0x7;
-			RFTIMER_REG__MAX_COUNT = 0x00004E20;
-			RFTIMER_REG__COMPARE7 = 0x00004E20;
-			RFTIMER_REG__COMPARE7_CONTROL = 0x03;
-
-			// Reset all counters
-			ANALOG_CFG_REG__0 = 0x0000;
-
-			// Enable all counters
-			ANALOG_CFG_REG__0 = 0x3FFF;
-		} else {
-			printf("Done\n");
-		}
-	}
-	*/
-	/*
-	if (interrupt & 0x00000080) {//printf("COMPARE7 MATCH\n");
-		// Disable this interrupt
-		ICER = 0x0080;
-		
-		RFTIMER_REG__COMPARE7_CONTROL = 0x00;
-				
-		// Disable all counters
-		ANALOG_CFG_REG__0 = 0x007F;
-			
-		// Read LC_div counter (via counter4)
-		rdata_lsb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x280000);
-		rdata_msb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x2C0000);
-		count_LC = rdata_lsb + (rdata_msb << 16);
-		
-		printf("Sweep: coarse: %d, mid: %d, fine: %d, count_LC: %d\n",
-		       (LC_sweep_code & 0x7C00) >> 10,
-				 	 (LC_sweep_code & 0x3E0) >> 5,
-				   LC_sweep_code & 0x1F,
-					 count_LC);
-		
-		++LC_sweep_code;
-		if (LC_sweep_code != 0x8000) {
-			LC_FREQCHANGE((LC_sweep_code & 0x7C00) >> 10,
-									(LC_sweep_code & 0x3E0) >> 5,
-									LC_sweep_code & 0x1F);
-			
-			// Enable RF timer interrupt
-			ISER = 0x0080;
-
-			RFTIMER_REG__CONTROL = 0x7;
-			RFTIMER_REG__MAX_COUNT = 0x00004E20;
-			RFTIMER_REG__COMPARE7 = 0x00004E20;
-			RFTIMER_REG__COMPARE7_CONTROL = 0x03;
-
-			// Reset all counters
-			ANALOG_CFG_REG__0 = 0x0000;
-
-			// Enable all counters
-			ANALOG_CFG_REG__0 = 0x3FFF;
-		} else {
-			printf("Done\n");
-		}
-	}
-	*/
-	/*
-	if (interrupt & 0x00000080) {//printf("COMPARE7 MATCH\n");
-		// Disable this interrupt
-		ICER = 0x0080;
-		
-		RFTIMER_REG__COMPARE7_CONTROL = 0x00;
-				
+	
 		// Disable all counters
 		ANALOG_CFG_REG__0 = 0x007F;
 		
@@ -735,12 +621,54 @@ void RFTIMER_ISR() {
 		rdata_lsb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x300000);
 		rdata_msb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x340000);
 		count_IF = rdata_lsb + (rdata_msb << 16);
-				
+		
 		printf("count_32k: %d, count_HFclock: %d, count_2M: %d, count_LC: %d, count_IF: %d\n",
 		       count_32k, count_HFclock, count_2M, count_LC, count_IF);
 	}
 	*/
-	//if (interrupt & 0x00000080) printf("COMPARE7 MATCH\n");
+	if (interrupt & 0x00000080) {//printf("COMPARE7 MATCH\n");
+		// Disable this interrupt
+		ICER = 0x0080;
+		
+		RFTIMER_REG__COMPARE7_CONTROL = 0x00;
+				
+		// Disable all counters
+		ANALOG_CFG_REG__0 = 0x007F;
+			
+		// Read LC_div counter (via counter4)
+		rdata_lsb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x280000);
+		rdata_msb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x2C0000);
+		count_LC = rdata_lsb + (rdata_msb << 16);
+		
+		printf("Sweep: coarse: %d, mid: %d, fine: %d, count_LC: %d\n",
+		       (LC_sweep_code >> 10) & 0x1F,
+				 	 (LC_sweep_code >> 5) & 0x1F,
+				   LC_sweep_code & 0x1F,
+					 count_LC);
+		
+		++LC_sweep_code;
+		if (LC_sweep_code != 32768U) {
+			LC_FREQCHANGE((LC_sweep_code >> 10) & 0x1F,
+										(LC_sweep_code >> 5) & 0x1F,
+										LC_sweep_code & 0x1F);
+			
+			// Enable RF timer interrupt
+			ISER = 0x0080;
+
+			RFTIMER_REG__CONTROL = 0x7;
+			RFTIMER_REG__MAX_COUNT = 0x00004E20;
+			RFTIMER_REG__COMPARE7 = 0x00004E20;
+			RFTIMER_REG__COMPARE7_CONTROL = 0x03;
+
+			// Reset all counters
+			ANALOG_CFG_REG__0 = 0x0000;
+
+			// Enable all counters
+			ANALOG_CFG_REG__0 = 0x3FFF;
+		} else {
+			printf("Done\n");
+		}
+	}
 	//if (interrupt & 0x00000100) printf("CAPTURE0 TRIGGERED AT: 0x%x\n", RFTIMER_REG__CAPTURE0);
 	//if (interrupt & 0x00000200) printf("CAPTURE1 TRIGGERED AT: 0x%x\n", RFTIMER_REG__CAPTURE1);
 	//if (interrupt & 0x00000400) printf("CAPTURE2 TRIGGERED AT: 0x%x\n", RFTIMER_REG__CAPTURE2);
@@ -961,139 +889,13 @@ void OPTICAL_SFD_ISR(){
 		
 		analog_scan_chain_write(&ASC[0]);
 		analog_scan_chain_load();
-
-		// LC calibration
-		/*
-		if (!found_coarse_codes) {
-			LC_freq_1k = count_LC / 1000 * 960 * 10;
-			if (LC_freq_1k > 2.35e6 && LC_freq_1k < 2.52e6) {
-			  coarse_codes[coarse_codes_length++] = coarse_code_iteration;
-			}
-
-			if (LC_freq_1k > 2.52e6 || coarse_code_iteration == 31) {
-				found_coarse_codes = 1;
-				for (i = 0; i < 32; ++i) {
-					mid0_codes[i] = 8;
-				}
-				
-				pass = 1;
-				mid0_iteration = 0;
-				
-				calibration_hysteresis = 0;
-			} else {
-				coarse_code_iteration++;
-				LC_FREQCHANGE(coarse_code_iteration, 15, 0);
-			}
-		} else {
-			if (mid0_iteration != coarse_codes_length) {
-				if (pass == 1) {
-					LC_monotonic_mid_fine(5 * mid0_codes[mid0_iteration] - 1, mid0_codes[mid0_iteration], 2000, &mid, &fine);
-					LC_FREQCHANGE(coarse_codes[mid0_iteration], mid, fine);
-					pass++;
-				} else if (pass == 2) {
-					LC_monotonic_mid_fine(5 * mid0_codes[mid0_iteration], mid0_codes[mid0_iteration], 2000, &mid, &fine);
-					LC_FREQCHANGE(coarse_codes[mid0_iteration], mid, fine);
-					previous_count_LC = count_LC;
-					pass++;
-				} else if (pass == 3) {
-					if ((int) count_LC <= (int) (previous_count_LC + min_diff)) {
-						mid0_codes[mid0_iteration]--;
-					} else if ((int) count_LC >= (int) (previous_count_LC + max_diff)) {
-						mid0_codes[mid0_iteration]++;
-					} else {
-						if (calibration_hysteresis) {
-							coarse0_codes[mid0_iteration] = 18 * mid0_codes[mid0_iteration];
-							mid0_iteration++;
-							calibration_hysteresis = 0;
-						} else {
-							mid0_codes[mid0_iteration]--;
-							calibration_hysteresis = 1;
-						}
-					}
-					pass = 1;
-					coarse0_iteration = 0;
-				}
-			} else {
-				if (coarse0_iteration != coarse_codes_length) {
-					if (pass == 1) {
-						LC_monotonic_mid_fine(coarse0_codes[coarse0_iteration] - 1, mid0_codes[coarse0_iteration], coarse0_codes[coarse0_iteration], &mid, &fine);
-						LC_FREQCHANGE(coarse_codes[coarse0_iteration], mid, fine);
-						pass++;
-					} else if (pass == 2) {
-						LC_monotonic_mid_fine(coarse0_codes[coarse0_iteration], mid0_codes[coarse0_iteration], coarse0_codes[coarse0_iteration], &mid, &fine);
-						LC_FREQCHANGE(coarse_codes[coarse0_iteration] + 1, mid, fine);
-						previous_count_LC = count_LC;
-						pass++;
-					} else if (pass == 3) {
-						if ((int) count_LC <= (int) (previous_count_LC + min_diff)) {
-							coarse0_codes[coarse0_iteration]--;
-						} else if ((int) count_LC >= (int) (previous_count_LC + max_diff)) {
-							coarse0_codes[coarse0_iteration]++;
-						} else {
-							if (calibration_hysteresis) {
-								coarse0_iteration++;
-								calibration_hysteresis = 0;
-								
-								if (coarse_codes[coarse0_iteration] == 31) {
-									coarse0_codes[coarse0_iteration] = 31 * mid0_codes[coarse0_iteration];
-									coarse0_iteration++;
-								}
-							} else {
-								coarse0_codes[coarse0_iteration]++;
-								calibration_hysteresis = 1;
-							}
-						}
-						pass = 1;
-					}
-				} else {
-					if (!LC_calibration_finished) {
-						for (i = 0; i < coarse_codes_length; ++i) {
-						}
-						cumulative_coarse0_codes[0] = coarse0_codes[0];
-						for (i = 1; i < coarse_codes_length; ++i) {
-							cumulative_coarse0_codes[i] = cumulative_coarse0_codes[i - 1] + coarse0_codes[i];
-						}
-							
-						LC_calibration_finished = 1;
-					}
-				}
-			}
-		}
-		*/
 	}
-	
-	/*
-	if (start_LC_sweep) {
-
-		// printf("Sweep: coarse: %d, mid: %d, fine: %d, count_LC: %d\n",
-		//				 (LC_sweep_code & 0x7C00) >> 10,
-		//				 (LC_sweep_code & 0x3E0) >> 5,
-		//				 LC_sweep_code & 0x1F,
-		//				 count_LC);
-	
-		printf("Monotonic sweep: code: %d, count_LC: %d\n", LC_sweep_code, count_LC);
-			
-		++LC_sweep_code;
-		
-		// LC_FREQCHANGE((LC_sweep_code & 0x7C00) >> 10,
-		// 							(LC_sweep_code & 0x3E0) >> 5,
-		//							LC_sweep_code & 0x1F);
-		
-		LC_monotonic(LC_sweep_code);
-	}
-	
-	if (LC_calibration_finished && !start_LC_sweep) {
-		start_LC_sweep = 1;
-		LC_sweep_code = 0;
-		LC_monotonic(0);
-	}
-	*/
 	
 	printf("%d\n", optical_cal_iteration);
 	// Debugging output
 	// printf("HF=%d-%d   2M=%d-%d,%d,%d   LC=%d-%d   IF=%d-%d\n",count_HFclock,HF_CLOCK_fine,count_2M,RC2M_coarse,RC2M_fine,RC2M_superfine,count_LC,LC_code,count_IF,IF_fine); 
 	 
-	if(optical_cal_iteration >= 20){// && LC_calibration_finished && start_LC_sweep && LC_sweep_code == cumulative_coarse0_codes[coarse_codes_length - 1]){
+	if (optical_cal_iteration >= 20) {
 		// Disable this ISR
 		ICER = 0x0800;
 		optical_cal_iteration = 0;
