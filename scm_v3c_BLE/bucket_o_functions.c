@@ -1,9 +1,10 @@
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include "Memory_Map.h"
 #include "scm3C_hardware_interface.h"
 
-extern unsigned int ASC[38]; // initialize the scan chain in memory
+extern uint32_t ASC[38]; // initialize the scan chain in memory
 
 
 // -----------------------------------------------

@@ -38,8 +38,8 @@ bool calibrate_LC = true;
 
 extern unsigned int current_lfsr;
 
-extern char send_packet[127];
-extern unsigned int ASC[38];
+extern uint8_t send_packet[127];
+extern uint32_t ASC[38];
 
 // Bootloader will insert length and pre-calculated CRC at these memory addresses	
 #define crc_value         (*((unsigned int *) 0x0000FFFC))
@@ -134,12 +134,9 @@ void measure_counters() {
 //////////////////////////////////////////////////////////////////
 
 int main(void) {
-	int t, t2;
-	uint8_t c, m, f;
-	unsigned int calc_crc;
+	int t;
+	uint32_t calc_crc;
 	uint8_t fine;
-
-	uint32_t rdata_lsb, rdata_msb, count_LC, count_32k, count_2M;
 	
 	uint8_t AdvA[6];
 	
@@ -293,7 +290,7 @@ int main(void) {
 		uint8_t packetBLE[64];
 		
 		measure_temperature();
-		
+				
 		if (!tx_rx_flag) {
 			
 			// Create some BLE packet
@@ -301,25 +298,25 @@ int main(void) {
 			// gen_ble_packet(packetBLE, AdvA, 37, 32767U);
 			
 			for (fine = 0; fine < 31; ++fine) {
-				
+								
 				// Load the packet into the arbitrary TX FIFO
 				load_tx_arb_fifo(packetBLE);
-				
+								
 				// Turn on LO and PA
 				radio_txEnable();
-				
+								
 				// Tune frequency
 				LC_FREQCHANGE(coarse_code, mid_code, fine);
 				
 				// Generate new packet with LC tuning
 				gen_ble_packet(packetBLE, AdvA, 37U, ((coarse_code & 0x1F) << 10) | ((mid_code & 0x1F) << 5) | (fine & 0x1F));
-				
+								
 				// Wait for frequency to settle
-				for(t = 0; t < 5000; ++t);
+				for (t = 0; t < 5000; ++t);
 				
 				// Send the packet
 				transmit_tx_arb_fifo();
-							
+											
 				// Wait for transmission to finish
 				// Don't know if there is some way to know when this has finished or just busy wait (?)
 				for(t = 0; t < 20000; ++t);

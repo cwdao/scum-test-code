@@ -7,29 +7,29 @@
 #include "scum_radio_bsp.h"
 
 // assorted BLE packet assembly globals
-const unsigned char BPREAMBLE = 0x55;
-const unsigned char BACCESS_ADDRESS1 = 0x6B; // need to split BACCESS_ADDRESS into bytes to avoid big-/little-endianness issue
-const unsigned char BACCESS_ADDRESS2 = 0x7D;
-const unsigned char BACCESS_ADDRESS3 = 0x91;
-const unsigned char BACCESS_ADDRESS4 = 0x71;
+const uint8_t BPREAMBLE = 0x55;
+const uint8_t BACCESS_ADDRESS1 = 0x6B; // need to split BACCESS_ADDRESS into bytes to avoid big-/little-endianness issue
+const uint8_t BACCESS_ADDRESS2 = 0x7D;
+const uint8_t BACCESS_ADDRESS3 = 0x91;
+const uint8_t BACCESS_ADDRESS4 = 0x71;
 
-const unsigned char PDU_HEADER1 = 0x40;
-const unsigned char PDU_HEADER2 = 0xA4; // pdu is 37 bytes long (6 bytes adv address + 7 bytes name + 4 bytes temp + 4 bytes LC freq + 16 bytes data)
-const unsigned char NAME_HEADER1 = 0x60; // name is 6 bytes long (1 byte GAP code + 5 bytes data)
-const unsigned char NAME_HEADER2 = 0x10;
-const unsigned char LC_FREQ_HEADER1 = 0xC0; // LC freq is 3 bytes long (1 byte GAP code + 2 bytes data)
-const unsigned char LC_FREQ_HEADER2 = 0x03; // custom GAP code for LC freq (0xC0 LSB first)
-const unsigned char TEMP_HEADER1 = 0xC0; // temp is 3 bytes long (1	byte GAP code + 2 bytes data)
-const unsigned char TEMP_HEADER2 = 0x83; // custom GAP code for temperature (0xC1 LSB first)
-const unsigned char DATA_HEADER1 = 0xF0; // data is 15 bytes long (1 byte GAP code + 14 bytes data)
-const unsigned char DATA_HEADER2 = 0x0B; // custom defined for data (0xD0 LSB first)
+const uint8_t PDU_HEADER1 = 0x40;
+const uint8_t PDU_HEADER2 = 0xA4; // pdu is 37 bytes long (6 bytes adv address + 7 bytes name + 4 bytes temp + 4 bytes LC freq + 16 bytes data)
+const uint8_t NAME_HEADER1 = 0x60; // name is 6 bytes long (1 byte GAP code + 5 bytes data)
+const uint8_t NAME_HEADER2 = 0x10;
+const uint8_t LC_FREQ_HEADER1 = 0xC0; // LC freq is 3 bytes long (1 byte GAP code + 2 bytes data)
+const uint8_t LC_FREQ_HEADER2 = 0x03; // custom GAP code for LC freq (0xC0 LSB first)
+const uint8_t TEMP_HEADER1 = 0xC0; // temp is 3 bytes long (1	byte GAP code + 2 bytes data)
+const uint8_t TEMP_HEADER2 = 0x83; // custom GAP code for temperature (0xC1 LSB first)
+const uint8_t DATA_HEADER1 = 0xF0; // data is 15 bytes long (1 byte GAP code + 14 bytes data)
+const uint8_t DATA_HEADER2 = 0x0B; // custom defined for data (0xD0 LSB first)
 
-const unsigned int PDU_LENGTH = 39; // pdu is 39 bytes long
-const unsigned int ADVA_LENGTH = 6; // adv address is 6 bytes long
-const unsigned int DATA_LENGTH = 14; // data is 18 bytes long
-const unsigned int CRC_LENGTH = 3; // crc is 3 bytes long
+const uint8_t PDU_LENGTH = 39; // pdu is 39 bytes long
+const uint8_t ADVA_LENGTH = 6; // adv address is 6 bytes long
+const uint8_t DATA_LENGTH = 14; // data is 18 bytes long
+const uint8_t CRC_LENGTH = 3; // crc is 3 bytes long
 
-extern unsigned int ASC[38];
+extern uint32_t ASC[38];
 
 extern unsigned int LC_code;
 extern unsigned int IF_coarse;
@@ -80,7 +80,7 @@ void gen_ble_packet(uint8_t *packet, uint8_t *AdvA, uint8_t channel, uint16_t LC
 	*pdu_pointer = PDU_HEADER2;
 	pdu_pointer++;
 	
-	for (byte1 = ADVA_LENGTH - 1; byte1 >= 0; byte1--) {
+	for (byte1 = ADVA_LENGTH - 1; byte1 >= 0; --byte1) {
 		*pdu_pointer = flipChar(AdvA[byte1]);
 		pdu_pointer++;
 	}
@@ -137,7 +137,7 @@ void gen_ble_packet(uint8_t *packet, uint8_t *AdvA, uint8_t channel, uint16_t LC
 	crc_pointer = pdu_pointer;
 	byte_addr = pdu_crc;
 	
-	for (i = 0; i < PDU_LENGTH; byte_addr++, ++i) {
+	for (i = 0; i < PDU_LENGTH; ++byte_addr, ++i) {
 		for (bit2 = 7; bit2 >= 0; --bit2) {
 			common = (crc1 & 1) ^ ((*byte_addr & (1 << bit2)) >> bit2);
 			crc1 = (crc1 >> 1) | ((crc2 & 1) << 7);
@@ -228,7 +228,7 @@ void radio_init_tx_BLE(){
 }
 
 /*
-void gen_test_ble_packet(unsigned char *packet) {
+void gen_test_ble_packet(uint8_t *packet) {
 	*packet = 0x1D;
 	packet++;
 	*packet = 0x55;
@@ -321,16 +321,16 @@ void gen_test_ble_packet(uint8_t *packet) {
 	*packet = 0xB8;
 }
 
-void load_tx_arb_fifo(unsigned char *packet) {
+void load_tx_arb_fifo(uint8_t *packet) {
 	
 	// Initialize Variables
 	int i;												// used to loop through the bytes
 	int j;												// used to loop through the 8 bits of each individual byte
-	
-	unsigned char current_byte;   // temporary variable used to get through each byte at a time
-	unsigned char current_bit;		// temporary variable to put the current bit into the GPIO
-	unsigned int fifo_ctrl_reg = 0x00000000; // local storage for analog CFG register 
 
+	uint8_t current_byte;   // temporary variable used to get through each byte at a time
+	uint8_t current_bit;		// temporary variable to put the current bit into the GPIO
+	uint32_t fifo_ctrl_reg = 0x00000000; // local storage for analog CFG register
+	
 	// Prepare FIFO for loading
 	fifo_ctrl_reg |= 0x00000001;  // raise LSB - data in valid
 	fifo_ctrl_reg &= 0xFFFFFFFB;  // lower 3rd bit - data out ready
@@ -339,11 +339,11 @@ void load_tx_arb_fifo(unsigned char *packet) {
 	ANALOG_CFG_REG__11 = fifo_ctrl_reg; // load in the configuration settings
 	
 	// Load packet into FIFO
-	for (i = 0; i < 64; i++) {
+	for (i = 0; i < 64; ++i) {
 		current_byte = *packet;     // put a byte into the temporary storage
 		packet++;										// go to the next byte (for next time)
 		
-		for (j = 7; j >= 0; j--) {
+		for (j = 7; j >= 0; --j) {
 			//current_bit = ((current_byte<<(j-1))&0x80)>>7;
 			current_bit = (current_byte >> j) & 0x1;
 			
@@ -366,7 +366,7 @@ void load_tx_arb_fifo(unsigned char *packet) {
 
 void transmit_tx_arb_fifo() {
 	
-	unsigned int fifo_ctrl_reg = 0x00000000; // local storage for analog CFG register 
+	uint32_t fifo_ctrl_reg = 0x00000000; // local storage for analog CFG register 
 
 	// Release data from FIFO
 	fifo_ctrl_reg |= 0x00000010; // enable div-by-2
@@ -381,9 +381,8 @@ void transmit_tx_arb_fifo() {
 // Must set IF clock frequency AFTER calling this function
 void radio_init_rx_ZCC_BLE(){
 	
-	int j;
-	unsigned int mask1, mask2;
-	unsigned int correlation_threshold;
+	uint32_t mask1, mask2;
+	uint32_t correlation_threshold;
 	
 	// IF uses ASC<271:500>, mask off outside that range
 	mask1 = 0xFFFE0000;
@@ -492,7 +491,7 @@ void radio_init_rx_ZCC_BLE(){
 
 void initialize_mote_ble(){
 
-	int t;
+	uint8_t t;
 	
 	// Disable interrupts for the radio FSM
 	radio_disable_interrupts();
@@ -557,9 +556,8 @@ void initialize_mote_ble(){
 	// Init counter setup - set all to analog_cfg control
 	// ASC[0] is leftmost
 	//ASC[0] |= 0x6F800000; 
-	for(t=2; t<9; t++) set_asc_bit(t);	
+	for(t=2; t<9; ++t) set_asc_bit(t);	
 	
-
 //radio_init_rx_MF();
 	// Init RX
 	radio_init_rx_ZCC_BLE();

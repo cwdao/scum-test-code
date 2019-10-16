@@ -9,8 +9,8 @@
 #include "bucket_o_functions.h"
 #include "fixed-point.h"
 
-extern char send_packet[127];
-extern char recv_packet[130];
+extern uint8_t send_packet[127];
+extern uint8_t recv_packet[130];
 
 unsigned int chips[100];
 unsigned int chip_index = 0;
@@ -24,7 +24,7 @@ extern unsigned int IF_clk_target;
 extern unsigned int IF_coarse;
 extern unsigned int IF_fine;
 extern unsigned int cal_iteration;
-extern unsigned int ASC[38];
+extern uint32_t ASC[38];
 
 unsigned int num_packets_received;
 unsigned int num_crc_errors;
@@ -580,7 +580,7 @@ void RFTIMER_ISR() {
 		printf("LC_code: %d\n", code);
 		
 		ratio = fix_double(fix_div(fix_init(count_2M), fix_init(count_32k)));
-				
+		
 		// Calculate temperature based on ratio
 		temp = -38.99 * ratio + 2411.17 + 8;
 		// temp = -34.7756 * ratio + 2165.3121 - 10;
@@ -773,12 +773,8 @@ void OPTICAL_32_ISR(){
 // Need to make sure a new bit has been clocked in prior to returning from this ISR, or else it will immediately execute again
 void OPTICAL_SFD_ISR(){
 	
-	int t, i;
 	unsigned int rdata_lsb, rdata_msb;
 	unsigned int count_LC, count_32k, count_2M, count_HFclock, count_IF;
-	unsigned int LC_freq_1k, mid, fine;
-	unsigned int min_diff = 8;
-	unsigned int max_diff = 12;
 		
 	// Disable all counters
 	ANALOG_CFG_REG__0 = 0x007F;
@@ -787,18 +783,18 @@ void OPTICAL_SFD_ISR(){
 	optical_cal_iteration++;
 		
 	// Read 32k counter
-	rdata_lsb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x000000);
-	rdata_msb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x040000);
+	rdata_lsb = *(uint32_t*)(APB_ANALOG_CFG_BASE + 0x000000);
+	rdata_msb = *(uint32_t*)(APB_ANALOG_CFG_BASE + 0x040000);
 	count_32k = rdata_lsb + (rdata_msb << 16);
 
 	// Read HF_CLOCK counter
-	rdata_lsb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x100000);
-	rdata_msb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x140000);
+	rdata_lsb = *(uint32_t*)(APB_ANALOG_CFG_BASE + 0x100000);
+	rdata_msb = *(uint32_t*)(APB_ANALOG_CFG_BASE + 0x140000);
 	count_HFclock = rdata_lsb + (rdata_msb << 16);
 
 	// Read 2M counter
-	rdata_lsb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x180000);
-	rdata_msb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x1C0000);
+	rdata_lsb = *(uint32_t*)(APB_ANALOG_CFG_BASE + 0x180000);
+	rdata_msb = *(uint32_t*)(APB_ANALOG_CFG_BASE + 0x1C0000);
 	count_2M = rdata_lsb + (rdata_msb << 16);
 		
 	// Read LC_div counter (via counter4)
@@ -807,8 +803,8 @@ void OPTICAL_SFD_ISR(){
 	count_LC = rdata_lsb + (rdata_msb << 16);
 	
 	// Read IF ADC_CLK counter
-	rdata_lsb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x300000);
-	rdata_msb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x340000);
+	rdata_lsb = *(uint32_t*)(APB_ANALOG_CFG_BASE + 0x300000);
+	rdata_msb = *(uint32_t*)(APB_ANALOG_CFG_BASE + 0x340000);
 	count_IF = rdata_lsb + (rdata_msb << 16);
 	
 	// Reset all counters

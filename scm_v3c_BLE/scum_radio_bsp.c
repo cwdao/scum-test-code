@@ -1,18 +1,19 @@
 #include <stdio.h>
+#include <stdint.h>
 #include "Memory_Map.h"
 #include "scm3_hardware_interface.h"
 #include "scm3C_hardware_interface.h"
 #include "bucket_o_functions.h"
 
-extern unsigned int ASC[38];
+extern uint32_t ASC[38];
 extern unsigned int cal_iteration;
-extern char recv_packet[130];
+extern uint8_t recv_packet[130];
 
 extern unsigned int RX_channel_codes[16]; 
 extern unsigned int TX_channel_codes[16];
 extern unsigned short current_RF_channel;
 
-extern char send_packet[127];
+extern uint8_t send_packet[127];
 
 unsigned char FIR_coeff[11] = {4,16,37,64,87,96,87,64,37,16,4};
 unsigned int IF_estimate_history[11] = {500,500,500,500,500,500,500,500,500,500};

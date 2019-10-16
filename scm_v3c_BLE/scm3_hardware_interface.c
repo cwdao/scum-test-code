@@ -1,8 +1,9 @@
 #include <stdio.h>
+#include <stdint.h>
 #include "Memory_Map.h"
 
-unsigned int ASC[38] = {0};
-extern char send_packet[127];
+uint32_t ASC[38] = {0};
+extern uint8_t send_packet[127];
 
 unsigned int current_lfsr = 0x12345678;
 

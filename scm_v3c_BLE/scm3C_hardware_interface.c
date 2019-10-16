@@ -1,12 +1,13 @@
 #include <stdio.h>
+#include <stdint.h>
 #include "Memory_Map.h"
 #include "scm3_hardware_interface.h"
 #include "bucket_o_functions.h"
 #include "scum_radio_bsp.h"
 
-extern unsigned int ASC[38];
+extern uint32_t ASC[38];
 extern unsigned int cal_iteration;
-extern char recv_packet[130];
+extern uint8_t recv_packet[130];
 
 extern unsigned int LC_target;
 extern unsigned int IF_clk_target;
@@ -188,8 +189,6 @@ void GPI_enables(unsigned int mask){
 			clear_asc_bit(asc_locations[j]);
 	}
 }
-	
-
 
 // Configure how radio and AUX LDOs are turned on and off
 void init_ldo_control(void){
