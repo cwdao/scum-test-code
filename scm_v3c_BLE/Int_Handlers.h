@@ -1,6 +1,8 @@
 #include "Memory_Map.h"
 #include "rf_global_vars.h"
 #include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include "scm3C_hardware_interface.h"
 #include "scm3_hardware_interface.h"
 #include "scum_radio_bsp.h"
@@ -50,7 +52,8 @@ unsigned int num_HFclock_ticks_in_100ms;
 
 extern unsigned int RX_channel_codes[16];
 extern unsigned int TX_channel_codes[16];
-extern unsigned short optical_cal_iteration,optical_cal_finished;
+extern uint32_t optical_cal_iteration;
+extern bool optical_cal_finished;
 
 signed int SFD_timestamp = 0;
 signed int SFD_timestamp_n_1 = 0;
@@ -68,16 +71,16 @@ extern unsigned short current_RF_channel;
 extern unsigned short do_debug_print;
 
 extern double temp;
-unsigned int count_2M, count_LC, count_32k;
+uint32_t count_2M, count_LC, count_32k;
 double ratio;
 unsigned int code;
 
-extern unsigned int calibrate_LC;
-extern unsigned int LC_sweep_code;
-extern unsigned int LC_min_diff;
+extern bool calibrate_LC;
+extern uint16_t LC_sweep_code;
+extern uint32_t LC_min_diff;
 
-extern unsigned int coarse_code;
-extern unsigned int mid_code;
+extern uint8_t coarse_code;
+extern uint8_t mid_code;
 
 int char_to_int(char c) {
 	switch (c) {
@@ -854,7 +857,7 @@ void OPTICAL_SFD_ISR(){
 		analog_scan_chain_load();
 	}
 	
-	printf("%d\n", optical_cal_iteration);
+	printf("%u\n", optical_cal_iteration);
 	// Debugging output
 	// printf("HF=%d-%d   2M=%d-%d,%d,%d   LC=%d-%d   IF=%d-%d\n",count_HFclock,HF_CLOCK_fine,count_2M,RC2M_coarse,RC2M_fine,RC2M_superfine,count_LC,LC_code,count_IF,IF_fine); 
 	 
@@ -870,7 +873,7 @@ void OPTICAL_SFD_ISR(){
 			mid_code = (LC_sweep_code >> 5) & 0x1F;
 		}
 		
-		printf("count_LC: %d, LC_target: %d, LC_min_diff: %d\n", count_LC, LC_target, LC_min_diff);
+		printf("count_LC: %u, LC_target: %u, LC_min_diff: %u\n", count_LC, LC_target, LC_min_diff);
 		
 		LC_sweep_code += (1 << 5);
 		LC_FREQCHANGE((LC_sweep_code >> 10) & 0x1F,
@@ -880,13 +883,13 @@ void OPTICAL_SFD_ISR(){
 	
 	if ((!calibrate_LC && optical_cal_iteration >= 20) || (calibrate_LC && LC_sweep_code >= (25 << 10))) {
 		if (calibrate_LC) {
-			printf("coarse code: %d, mid code: %d\n", coarse_code, mid_code);
+			printf("coarse code: %u, mid code: %u\n", coarse_code, mid_code);
 		}
 
 		// Disable this ISR
 		ICER = 0x0800;
 		optical_cal_iteration = 0;
-		optical_cal_finished = 1;
+		optical_cal_finished = true;
 		
 		// Store the last count values
 		num_32k_ticks_in_100ms = count_32k;

@@ -1,29 +1,9 @@
-// ------------------------------------------------------------------------------------------
-// This flag determines whether the demo code will continuously transmit or continuously receive
-// 0 = Transmit
-// 1 = Receive
-// Both will occur on BLE channel 37 (2.402 GHz)
-unsigned int tx_rx_flag = 0;
-// ------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------
-// This flag determines whether SCuM is sweeping all counters
-// 0 = Not sweeping
-// 1 = Sweeping
-unsigned int sweeping_counters = 0;
-// ------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------
-// This flag determines whether SCuM should calibrate LC coarse and mid codes for channel 37
-// 0 = Not calibrating
-// 1 = Calibrating
-unsigned int calibrate_LC = 1;
-// ------------------------------------------------------------------------------------------
-
 #include <stdio.h>
 #include <time.h>
 #include <rt_misc.h>
+#include <stdbool.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "Memory_map.h"
 #include "Int_Handlers.h"
 #include "rf_global_vars.h"
@@ -33,6 +13,28 @@ unsigned int calibrate_LC = 1;
 #include <math.h>
 #include "scum_radio_bsp.h"
 #include "scm_ble_functions.h"
+
+// ------------------------------------------------------------------------------------------
+// This flag determines whether the demo code will continuously transmit or continuously receive
+// False = Transmit
+// True = Receive
+// Both will occur on BLE channel 37 (2.402 GHz)
+bool tx_rx_flag = false;
+// ------------------------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------------------------
+// This flag determines whether SCuM is sweeping all counters
+// False = Not sweeping
+// True = Sweeping
+bool sweeping_counters = false;
+// ------------------------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------------------------
+// This flag determines whether SCuM should calibrate LC coarse and mid codes for channel 37
+// False = Not calibrating
+// True = Calibrating
+bool calibrate_LC = true;
+// ------------------------------------------------------------------------------------------
 
 extern unsigned int current_lfsr;
 
@@ -64,17 +66,18 @@ unsigned int cal_iteration = 0;
 unsigned int run_test_flag = 0;
 unsigned int num_packets_to_test = 1;
 
-unsigned short optical_cal_iteration = 0, optical_cal_finished = 0;
+uint32_t optical_cal_iteration = 0;
+bool optical_cal_finished = 0;
 
 unsigned short doing_initial_packet_search;
 unsigned short current_RF_channel;
 unsigned short do_debug_print = 0;
 
-unsigned int LC_sweep_code;
-unsigned int LC_min_diff;
+uint16_t LC_sweep_code;
+uint32_t LC_min_diff;
 
-unsigned int coarse_code = 23;
-unsigned int mid_code = 12;
+uint8_t coarse_code = 23;
+uint8_t mid_code = 12;
 	
 //////////////////////////////////////////////////////////////////
 // Temperature Function
@@ -131,14 +134,14 @@ void measure_counters() {
 //////////////////////////////////////////////////////////////////
 
 int main(void) {
-	int t,t2;
-	int c, m, f;
+	int t, t2;
+	uint8_t c, m, f;
 	unsigned int calc_crc;
-	int fine;
+	uint8_t fine;
 
-	unsigned int rdata_lsb, rdata_msb, count_LC, count_32k, count_2M;
+	uint32_t rdata_lsb, rdata_msb, count_LC, count_32k, count_2M;
 	
-	unsigned char AdvA[6];
+	uint8_t AdvA[6];
 	
 	printf("Initializing...");
 	
@@ -151,10 +154,10 @@ int main(void) {
 	
 	calc_crc = crc32c(0x0000, code_length);
 
-	if(calc_crc == crc_value){
+	if (calc_crc == crc_value){
 		printf("CRC OK\n");
 	}
-	else{
+	else {
 		printf("\nProgramming Error - CRC DOES NOT MATCH - Halting Execution\n");
 		while(1);
 	}
@@ -173,7 +176,7 @@ int main(void) {
 	
 
 	// TX
-	if(tx_rx_flag == 0){
+	if (!tx_rx_flag){
 
 		// Calibration counts for 100ms
 		// Divide ratio is currently 480
@@ -287,11 +290,11 @@ int main(void) {
 		
 	while(1) {
 			
-		unsigned char packetBLE[64];
+		uint8_t packetBLE[64];
 		
 		measure_temperature();
 		
-		if (tx_rx_flag == 0) {
+		if (!tx_rx_flag) {
 			
 			// Create some BLE packet
 			// gen_test_ble_packet(packetBLE);
@@ -309,7 +312,7 @@ int main(void) {
 				LC_FREQCHANGE(coarse_code, mid_code, fine);
 				
 				// Generate new packet with LC tuning
-				gen_ble_packet(packetBLE, AdvA, 37, ((coarse_code & 0x1F) << 10) | ((mid_code & 0x1F) << 5) | (fine & 0x1F));
+				gen_ble_packet(packetBLE, AdvA, 37U, ((coarse_code & 0x1F) << 10) | ((mid_code & 0x1F) << 5) | (fine & 0x1F));
 				
 				// Wait for frequency to settle
 				for(t = 0; t < 5000; ++t);
@@ -329,7 +332,7 @@ int main(void) {
 		}
 		
 		// Wait  - this sets packet transmission rate
-		for(t = 0; t < 2000; ++t);
+		for (t = 0; t < 2000; ++t);
 
 	}
 }
