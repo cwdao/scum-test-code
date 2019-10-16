@@ -6,6 +6,20 @@
 unsigned int tx_rx_flag = 0;
 // ------------------------------------------------------------------------------------------
 
+// ------------------------------------------------------------------------------------------
+// This flag determines whether SCuM is sweeping all counters
+// 0 = Not sweeping
+// 1 = Sweeping
+unsigned int sweeping_counters = 0;
+// ------------------------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------------------------
+// This flag determines whether SCuM should calibrate LC coarse and mid codes for channel 37
+// 0 = Not calibrating
+// 1 = Calibrating
+unsigned int calibrate_LC = 1;
+// ------------------------------------------------------------------------------------------
+
 #include <stdio.h>
 #include <time.h>
 #include <rt_misc.h>
@@ -29,8 +43,8 @@ extern unsigned int ASC[38];
 #define crc_value         (*((unsigned int *) 0x0000FFFC))
 #define code_length       (*((unsigned int *) 0x0000FFF8))
 
-unsigned int LC_target = 250182;
-unsigned int LC_code = 840;
+unsigned int LC_target;
+unsigned int LC_code;
 
 // HF_CLOCK tuning settings
 unsigned int HF_CLOCK_fine = 17;
@@ -57,40 +71,10 @@ unsigned short current_RF_channel;
 unsigned short do_debug_print = 0;
 
 unsigned int LC_sweep_code;
+unsigned int LC_min_diff;
 
 unsigned int coarse_code = 23;
 unsigned int mid_code = 12;
-
-void sweep_LC() {
-	// Enable static divider
-	divProgram(480, 1, 1);
-	
-	// Turn on LO, DIV, PA, IF
-	ANALOG_CFG_REG__10 = 0x78;
-	
-	// Turn off polyphase and disable mixer
-	ANALOG_CFG_REG__16 = 0x6;
-	
-	LC_sweep_code = 0;
-	
-	LC_FREQCHANGE((LC_sweep_code >> 10) & 0x1F,
-	              (LC_sweep_code >> 5) & 0x1F,
-	              LC_sweep_code & 0x1F);
-	
-	// Enable RF timer interrupt
-	ISER = 0x0080;
-
-	RFTIMER_REG__CONTROL = 0x7;
-	RFTIMER_REG__MAX_COUNT = 0x00004E20;
-	RFTIMER_REG__COMPARE7 = 0x00004E20;
-	RFTIMER_REG__COMPARE7_CONTROL = 0x03;
-
-	// Reset all counters
-	ANALOG_CFG_REG__0 = 0x0000;
-
-	// Enable all counters
-	ANALOG_CFG_REG__0 = 0x3FFF;
-}
 	
 //////////////////////////////////////////////////////////////////
 // Temperature Function
@@ -165,7 +149,7 @@ int main(void) {
 	printf("\n-------------------\n");
 	printf("Validating program integrity..."); 
 	
-	calc_crc = crc32c(0x0000,code_length);
+	calc_crc = crc32c(0x0000, code_length);
 
 	if(calc_crc == crc_value){
 		printf("CRC OK\n");
@@ -193,10 +177,10 @@ int main(void) {
 
 		// Calibration counts for 100ms
 		// Divide ratio is currently 480
-		LC_code = 690; //Starting LC code
+		LC_code = 690; // Starting LC code
 
 		// For TX, target LC freq = 2.402G - 0.25M = 2.40175 GHz
-		LC_target = 250187;
+		LC_target = 250020;
 		
 		// Turn on LO, DIV, PA
 		ANALOG_CFG_REG__10 = 0x68;
@@ -206,7 +190,7 @@ int main(void) {
 		
 	}
 	// RX
-	else{
+	else {
 		// For RX, target LC freq = 2.402G - 2.5M = 2.3995 GHz
 		LC_target = 250000; 
 		
@@ -215,6 +199,15 @@ int main(void) {
 		
 		// Enable polyphase and mixers via memory-mapped I/O
 		ANALOG_CFG_REG__16 = 0x1;
+	}
+	
+	if (calibrate_LC) {
+		LC_sweep_code = (21U << 10) | (0U << 5) | (15U); // start at coarse=21, mid=0, fine=15
+		LC_min_diff = 1000000U;
+		
+		LC_FREQCHANGE((LC_sweep_code >> 10) & 0x1F,
+		              (LC_sweep_code >> 5) & 0x1F,
+		              LC_sweep_code & 0x1F);
 	}
 	
 	// Enable optical SFD interrupt for optical calibration
@@ -229,19 +222,13 @@ int main(void) {
 	// Disable static divider to save power
 	divProgram(480,0,0);
 
-	
-//	// halt here to debug for getting frequencies right
-//	while(1){
-//	for(t=0;t<100;t++);
-//	}
-
 	// Hard code LO value for TX - works on board #5; 2.402G - 250kHz
-	if(tx_rx_flag == 0){
+	if (tx_rx_flag == 0) {
 		// LC_monotonic(680);
 	}
 
 	// Some more RX setup
-	if(tx_rx_flag == 1){
+	if (tx_rx_flag == 1) {
 		// BLE RX only works using the 32-bit raw chips shift register receiver
 		// So you must know 32-bits at the beginning of the packet to trigger on
 		
@@ -282,7 +269,7 @@ int main(void) {
 	}
 	
 	// Enable UART interrupt
-	ISER = 0x0001; 
+	ISER = 0x0001;
 	
 	AdvA[0] = 0x00;
 	AdvA[1] = 0x02;
@@ -291,17 +278,12 @@ int main(void) {
 	AdvA[4] = 0x80;
 	AdvA[5] = 0xC6;
 	
-	/*
-	while (1) {
-		measure_counters();
-		for (t = 0; t < 200000; ++t);
+	if (sweeping_counters) {
+		while (1) {
+			measure_counters();
+			for (t = 0; t < 200000; ++t);
+		}
 	}
-	*/
-	
-	/*
-	sweep_LC();
-	while (1);
-	*/
 		
 	while(1) {
 			

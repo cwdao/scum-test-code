@@ -71,7 +71,13 @@ extern double temp;
 unsigned int count_2M, count_LC, count_32k;
 double ratio;
 unsigned int code;
+
+extern unsigned int calibrate_LC;
 extern unsigned int LC_sweep_code;
+extern unsigned int LC_min_diff;
+
+extern unsigned int coarse_code;
+extern unsigned int mid_code;
 
 int char_to_int(char c) {
 	switch (c) {
@@ -587,7 +593,6 @@ void RFTIMER_ISR() {
 		
 		// LC_monotonic(code);
 	}
-	/*
 	if (interrupt & 0x00000080) {//printf("COMPARE7 MATCH\n");
 		// Disable this interrupt
 		ICER = 0x0080;
@@ -624,50 +629,6 @@ void RFTIMER_ISR() {
 		
 		printf("count_32k: %d, count_HFclock: %d, count_2M: %d, count_LC: %d, count_IF: %d\n",
 		       count_32k, count_HFclock, count_2M, count_LC, count_IF);
-	}
-	*/
-	if (interrupt & 0x00000080) {//printf("COMPARE7 MATCH\n");
-		// Disable this interrupt
-		ICER = 0x0080;
-		
-		RFTIMER_REG__COMPARE7_CONTROL = 0x00;
-				
-		// Disable all counters
-		ANALOG_CFG_REG__0 = 0x007F;
-			
-		// Read LC_div counter (via counter4)
-		rdata_lsb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x280000);
-		rdata_msb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x2C0000);
-		count_LC = rdata_lsb + (rdata_msb << 16);
-		
-		printf("Sweep: coarse: %d, mid: %d, fine: %d, count_LC: %d\n",
-		       (LC_sweep_code >> 10) & 0x1F,
-				 	 (LC_sweep_code >> 5) & 0x1F,
-				   LC_sweep_code & 0x1F,
-					 count_LC);
-		
-		++LC_sweep_code;
-		if (LC_sweep_code != 32768U) {
-			LC_FREQCHANGE((LC_sweep_code >> 10) & 0x1F,
-										(LC_sweep_code >> 5) & 0x1F,
-										LC_sweep_code & 0x1F);
-			
-			// Enable RF timer interrupt
-			ISER = 0x0080;
-
-			RFTIMER_REG__CONTROL = 0x7;
-			RFTIMER_REG__MAX_COUNT = 0x00004E20;
-			RFTIMER_REG__COMPARE7 = 0x00004E20;
-			RFTIMER_REG__COMPARE7_CONTROL = 0x03;
-
-			// Reset all counters
-			ANALOG_CFG_REG__0 = 0x0000;
-
-			// Enable all counters
-			ANALOG_CFG_REG__0 = 0x3FFF;
-		} else {
-			printf("Done\n");
-		}
 	}
 	//if (interrupt & 0x00000100) printf("CAPTURE0 TRIGGERED AT: 0x%x\n", RFTIMER_REG__CAPTURE0);
 	//if (interrupt & 0x00000200) printf("CAPTURE1 TRIGGERED AT: 0x%x\n", RFTIMER_REG__CAPTURE1);
@@ -854,7 +815,7 @@ void OPTICAL_SFD_ISR(){
 	ANALOG_CFG_REG__0 = 0x3FFF;
 		
 	// Don't make updates on the first two executions of this ISR
-	if(optical_cal_iteration > 2) {
+	if (optical_cal_iteration > 2) {
 		
 		// Do correction on HF CLOCK
 		// Fine DAC step size is about 6000 counts
@@ -863,10 +824,12 @@ void OPTICAL_SFD_ISR(){
 		set_sys_clk_secondary_freq(HF_CLOCK_coarse, HF_CLOCK_fine);
 		
 		// Do correction on LC
+		/*
 		if(count_LC > (LC_target + 0)) LC_code -= 1;
 		if(count_LC < (LC_target - 0))	LC_code += 1;
 		LC_monotonic(LC_code);
 		code = LC_code;
+		*/
 			
 		// Do correction on 2M RC
 		// Coarse step ~1100 counts, fine ~150 counts, superfine ~25
@@ -895,7 +858,31 @@ void OPTICAL_SFD_ISR(){
 	// Debugging output
 	// printf("HF=%d-%d   2M=%d-%d,%d,%d   LC=%d-%d   IF=%d-%d\n",count_HFclock,HF_CLOCK_fine,count_2M,RC2M_coarse,RC2M_fine,RC2M_superfine,count_LC,LC_code,count_IF,IF_fine); 
 	 
-	if (optical_cal_iteration >= 20) {
+	
+	if (calibrate_LC) {
+		if ((count_LC <= LC_target) && (LC_target - count_LC < LC_min_diff)) {			
+			LC_min_diff = LC_target - count_LC;
+			coarse_code = (LC_sweep_code >> 10) & 0x1F;
+			mid_code = (LC_sweep_code >> 5) & 0x1F;
+		} else if ((count_LC > LC_target) && (count_LC - LC_target < LC_min_diff)) {
+			LC_min_diff = count_LC - LC_target;
+			coarse_code = (LC_sweep_code >> 10) & 0x1F;
+			mid_code = (LC_sweep_code >> 5) & 0x1F;
+		}
+		
+		printf("count_LC: %d, LC_target: %d, LC_min_diff: %d\n", count_LC, LC_target, LC_min_diff);
+		
+		LC_sweep_code += (1 << 5);
+		LC_FREQCHANGE((LC_sweep_code >> 10) & 0x1F,
+		              (LC_sweep_code >> 5) & 0x1F,
+		              LC_sweep_code & 0x1F);
+	}
+	
+	if ((!calibrate_LC && optical_cal_iteration >= 20) || (calibrate_LC && LC_sweep_code >= (25 << 10))) {
+		if (calibrate_LC) {
+			printf("coarse code: %d, mid code: %d\n", coarse_code, mid_code);
+		}
+
 		// Disable this ISR
 		ICER = 0x0800;
 		optical_cal_iteration = 0;
