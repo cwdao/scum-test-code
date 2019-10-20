@@ -23,10 +23,10 @@ bool tx_rx_flag = false;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
-// This flag determines whether SCuM is sweeping all counters
+// This flag determines whether SCuM is sweeping the 2M and 32k counters
 // False = Not sweeping
 // True = Sweeping
-bool sweeping_counters = false;
+bool sweeping_2M_32k_counters = true;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
@@ -288,7 +288,7 @@ int main(void) {
 	AdvA[4] = 0x80;
 	AdvA[5] = 0xC6;
 	
-	if (sweeping_counters) {
+	if (sweeping_2M_32k_counters) {
 		while (1) {
 			measure_2M_32k_counters();
 			for (t = 0; t < 200000; ++t);

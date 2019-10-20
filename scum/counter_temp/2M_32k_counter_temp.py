@@ -21,11 +21,11 @@ def measure_counters(scm_ser, temp_ser, counts_2M, counts_32k, temperatures):
 		counts = counter_data.split()
 
 		if counter_data and len(counts) == 4:
-			count_2M = re.sub(r"[^\d]", "", counts[1])
-			counts_2M.append(int(count_2M))
-
-			count_32k = re.sub(r"[^\d]", "", counts[3])
+			count_32k = re.sub(r"[^\d]", "", counts[1])
 			counts_32k.append(int(count_32k))
+
+			count_2M = re.sub(r"[^\d]", "", counts[3])
+			counts_2M.append(int(count_2M))
 
 			# Throw away first temperature reading
 			temp_ser.write(b"temp\n")
@@ -35,12 +35,12 @@ def measure_counters(scm_ser, temp_ser, counts_2M, counts_32k, temperatures):
 
 			temperatures.append(float(temp_data))
 
-			print("Read counters and temperature, temp=" + temp_data)
+			print("Read 32k and 2M counters and temperature, count_32k={}, count_2M={}, temp={}".format(count_32k, count_2M, temp_data))
 
 if __name__ == "__main__":
 	scm_port = "COM12"
 	temp_port = "COM11"
-	filename = "counter_temp_data"
+	filename = "2M_32k_counter_temp_data"
 
 	counts_2M, counts_32k, temperatures = [], [], []
 
