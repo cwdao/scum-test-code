@@ -71,6 +71,8 @@ extern unsigned short current_RF_channel;
 extern unsigned short do_debug_print;
 
 extern double temp;
+extern uint8_t temp_iteration;
+extern uint32_t cumulative_count_2M, cumulative_count_32k;
 uint32_t count_2M, count_LC, count_32k;
 double ratio;
 unsigned int code;
@@ -569,32 +571,41 @@ void RFTIMER_ISR() {
 		
 	}
 	if (interrupt & 0x00000040) {//printf("COMPARE6 MATCH\n");
-		// Disable this interrupt
-		ICER = 0x0080;
-		
 		RFTIMER_REG__COMPARE6_CONTROL = 0x00;
 		
 		read_counters(&count_2M, &count_LC, &count_32k);
 		
-		printf("count_2M: %d, count_32k: %d\n", count_2M, count_32k);
-		printf("LC_code: %d\n", code);
+		printf("count_2M: %d, count_32k: %d, temp_iteration: %d\n", count_2M, count_32k, temp_iteration);
 		
-		ratio = fix_double(fix_div(fix_init(count_2M), fix_init(count_32k)));
-		
-		// Calculate temperature based on ratio
-		temp = -38.99 * ratio + 2411.17 + 8;
-		// temp = -34.7756 * ratio + 2165.3121 - 10;
-		
-		printf("Temp: %d\n", (int)(temp * 100));
-		
-		// Calculate LC code based on temperature
-		if (temp < 42) {
-			code = 0.7901 * (temp + 10) + 668.3272 - 3;
+		if (temp_iteration == 5) {
+			// Disable this interrupt
+			ICER = 0x0080;
+			
+			ratio = fix_double(fix_div(fix_init(count_2M), fix_init(count_32k)));
+			
+			// Calculate temperature based on average ratio
+			temp = -38.99 * ratio + 2411.17 + 8;
+			printf("Temp: %d\n", (int)(temp * 100));
+			
+			temp_iteration = 0;
+			cumulative_count_2M = 0;
+			cumulative_count_32k = 0;
 		} else {
-			code = 0.7940 * (temp + 10) + 656.4020 - 3;
+			temp_iteration += 1;
+			cumulative_count_2M += count_2M;
+			cumulative_count_32k += count_32k;
+			
+			RFTIMER_REG__CONTROL = 0x7;
+			RFTIMER_REG__MAX_COUNT = 0x0000C350;
+			RFTIMER_REG__COMPARE6 = 0x0000C350;
+			RFTIMER_REG__COMPARE6_CONTROL = 0x03;
+
+			// Reset all counters
+			ANALOG_CFG_REG__0 = 0x0000;
+
+			// Enable all counters
+			ANALOG_CFG_REG__0 = 0x3FFF;
 		}
-		
-		// LC_monotonic(code);
 	}
 	if (interrupt & 0x00000080) {//printf("COMPARE7 MATCH\n");
 		// Disable this interrupt
@@ -610,28 +621,12 @@ void RFTIMER_ISR() {
 		rdata_msb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x040000);
 		count_32k = rdata_lsb + (rdata_msb << 16);
 
-		// Read HF_CLOCK counter
-		rdata_lsb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x100000);
-		rdata_msb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x140000);
-		count_HFclock = rdata_lsb + (rdata_msb << 16);
-
 		// Read 2M counter
 		rdata_lsb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x180000);
 		rdata_msb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x1C0000);
 		count_2M = rdata_lsb + (rdata_msb << 16);
-			
-		// Read LC_div counter (via counter4)
-		rdata_lsb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x280000);
-		rdata_msb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x2C0000);
-		count_LC = rdata_lsb + (rdata_msb << 16);
 		
-		// Read IF ADC_CLK counter
-		rdata_lsb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x300000);
-		rdata_msb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x340000);
-		count_IF = rdata_lsb + (rdata_msb << 16);
-		
-		printf("count_32k: %d, count_HFclock: %d, count_2M: %d, count_LC: %d, count_IF: %d\n",
-		       count_32k, count_HFclock, count_2M, count_LC, count_IF);
+		printf("count_32k: %d, count_2M: %d\n", count_32k, count_2M);
 	}
 	//if (interrupt & 0x00000100) printf("CAPTURE0 TRIGGERED AT: 0x%x\n", RFTIMER_REG__CAPTURE0);
 	//if (interrupt & 0x00000200) printf("CAPTURE1 TRIGGERED AT: 0x%x\n", RFTIMER_REG__CAPTURE1);
@@ -877,7 +872,7 @@ void OPTICAL_SFD_ISR(){
 		              LC_sweep_code & 0x1F);
 	}
 	
-	if ((!calibrate_LC && optical_cal_iteration >= 20) || (calibrate_LC && LC_sweep_code >= (25 << 10))) {
+	if ((!calibrate_LC && optical_cal_iteration >= 20) || (calibrate_LC && LC_sweep_code >= (30U << 10))) {
 		if (calibrate_LC) {
 			printf("coarse code: %u, mid code: %u\n", coarse_code, mid_code);
 		}

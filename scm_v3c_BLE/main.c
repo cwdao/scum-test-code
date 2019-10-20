@@ -30,10 +30,16 @@ bool sweeping_counters = false;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
-// This flag determines whether SCuM should calibrate LC coarse and mid codes for channel 37
+// This flag determines whether SCuM should calibrate LC coarse and mid codes
 // False = Not calibrating
 // True = Calibrating
 bool calibrate_LC = true;
+// ------------------------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------------------------
+// This flag determines the BLE channel
+// 37U, 38U, or 39U
+uint8_t channel = 37U;
 // ------------------------------------------------------------------------------------------
 
 extern unsigned int current_lfsr;
@@ -78,23 +84,30 @@ uint32_t LC_min_diff;
 
 uint8_t coarse_code = 23;
 uint8_t mid_code = 12;
-	
+
 //////////////////////////////////////////////////////////////////
 // Temperature Function
 //////////////////////////////////////////////////////////////////
 
 double temp = 20;
+uint8_t temp_iteration = 0;
+uint32_t cumulative_count_2M = 0;
+uint32_t cumulative_count_32k = 0;
 
 void measure_temperature() {
 	// RFCONTROLLER_REG__INT_CONFIG = 0x3FF;   // Enable all interrupts and pulses to radio timer
 	// RFCONTROLLER_REG__ERROR_CONFIG = 0x1F;  // Enable all errors
 	
+	temp_iteration = 0;
+	cumulative_count_2M = 0;
+	cumulative_count_32k = 0;
+	
 	// Enable RF timer interrupt
 	ISER = 0x0080;
 
 	RFTIMER_REG__CONTROL = 0x7;
-	RFTIMER_REG__MAX_COUNT = 0x0003D090;
-	RFTIMER_REG__COMPARE6 = 0x0003D090;
+	RFTIMER_REG__MAX_COUNT = 0x0000C350;
+	RFTIMER_REG__COMPARE6 = 0x0000C350;
 	RFTIMER_REG__COMPARE6_CONTROL = 0x03;
 
 	// Reset all counters
@@ -104,16 +117,7 @@ void measure_temperature() {
 	ANALOG_CFG_REG__0 = 0x3FFF;
 }
 
-void measure_counters() {
-	// Enable static divider
-	divProgram(480, 1, 1);
-	
-	// Turn on LO, DIV, PA, IF
-	ANALOG_CFG_REG__10 = 0x78;
-	
-	// Turn off polyphase and disable mixer
-	ANALOG_CFG_REG__16 = 0x6;
-	
+void measure_2M_32k_counters() {		
 	// Enable RF timer interrupt
 	ISER = 0x0080;
 
@@ -180,7 +184,13 @@ int main(void) {
 		LC_code = 690; // Starting LC code
 
 		// For TX, target LC freq = 2.402G - 0.25M = 2.40175 GHz
-		LC_target = 250020;
+		if (channel == 38U) {
+			LC_target = 252522; // channel 38
+		} else if (channel == 39U) {
+			LC_target = 258160; // channel 39
+		} else {
+			LC_target = 250020; // channel 37 default
+		}
 		
 		// Turn on LO, DIV, PA
 		ANALOG_CFG_REG__10 = 0x68;
@@ -202,7 +212,7 @@ int main(void) {
 	}
 	
 	if (calibrate_LC) {
-		LC_sweep_code = (21U << 10) | (0U << 5) | (15U); // start at coarse=21, mid=0, fine=15
+		LC_sweep_code = (22U << 10) | (0U << 5) | (15U); // start at coarse=22, mid=0, fine=15
 		LC_min_diff = 1000000U;
 		
 		LC_FREQCHANGE((LC_sweep_code >> 10) & 0x1F,
@@ -214,7 +224,7 @@ int main(void) {
 	ISER = 0x0800;
 		
 	// Wait for optical cal to finish
-	while(optical_cal_finished == 0);
+	while (optical_cal_finished == 0);
 	optical_cal_finished = 0;
 	
 	printf("Cal complete\n");
@@ -259,7 +269,7 @@ int main(void) {
 		radio_rxEnable();
 		
 		// Hard code the frequency for now
-		//LC_FREQCHANGE(21,10,16);
+		// LC_FREQCHANGE(21,10,16);
 		// LC_FREQCHANGE(23,2,14);
 		
 		// Enable the raw chips startval interrupt
@@ -280,7 +290,7 @@ int main(void) {
 	
 	if (sweeping_counters) {
 		while (1) {
-			measure_counters();
+			measure_2M_32k_counters();
 			for (t = 0; t < 200000; ++t);
 		}
 	}
@@ -308,8 +318,10 @@ int main(void) {
 				// Tune frequency
 				LC_FREQCHANGE(coarse_code, mid_code, fine);
 				
+				// AdvA[5] = fine;
+				
 				// Generate new packet with LC tuning
-				gen_ble_packet(packetBLE, AdvA, 37U, ((coarse_code & 0x1F) << 10) | ((mid_code & 0x1F) << 5) | (fine & 0x1F));
+				gen_ble_packet(packetBLE, AdvA, channel, ((coarse_code & 0x1F) << 10) | ((mid_code & 0x1F) << 5) | (fine & 0x1F));
 								
 				// Wait for frequency to settle
 				for (t = 0; t < 5000; ++t);

@@ -61,7 +61,7 @@ void gen_ble_packet(uint8_t *packet, uint8_t *AdvA, uint8_t channel, uint16_t LC
 	uint8_t *crc_pointer = pdu_crc;
 	uint8_t *byte_addr = pdu_crc;
 	
-	uint8_t lfsr = channel | 0x40; // [1 channel[6]]
+	uint8_t lfsr = (channel & 0x3F) | (1 << 6); // [1 channel[6]]
 		
 	*packet = BPREAMBLE;
 	packet++;
