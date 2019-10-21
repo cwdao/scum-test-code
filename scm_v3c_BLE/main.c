@@ -26,7 +26,7 @@ bool tx_rx_flag = false;
 // This flag determines whether SCuM is sweeping the 2M and 32k counters
 // False = Not sweeping
 // True = Sweeping
-bool sweeping_2M_32k_counters = true;
+bool sweeping_2M_32k_counters = false;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------

@@ -584,7 +584,7 @@ void RFTIMER_ISR() {
 			ratio = fix_double(fix_div(fix_init(count_2M), fix_init(count_32k)));
 			
 			// Calculate temperature based on average ratio
-			temp = -38.99 * ratio + 2411.17 + 8;
+			temp = -30.715 * ratio + 1915.142;
 			printf("Temp: %d\n", (int)(temp * 100));
 			
 			temp_iteration = 0;
