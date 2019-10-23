@@ -189,7 +189,8 @@ int main(void) {
 		} else if (channel == 39U) {
 			LC_target = 258160; // channel 39
 		} else {
-			LC_target = 250020; // channel 37 default
+			// LC_target = 250100; // channel 37, default, for flexboard
+			LC_target = 250020; // channel 37, default, for Q4
 		}
 		
 		// Turn on LO, DIV, PA
@@ -212,7 +213,7 @@ int main(void) {
 	}
 	
 	if (calibrate_LC) {
-		LC_sweep_code = (22U << 10) | (0U << 5) | (15U); // start at coarse=22, mid=0, fine=15
+		LC_sweep_code = (20U << 10) | (0U << 5) | (15U); // start at coarse=20, mid=0, fine=15
 		LC_min_diff = 1000000U;
 		
 		LC_FREQCHANGE((LC_sweep_code >> 10) & 0x1F,
@@ -296,19 +297,19 @@ int main(void) {
 	}
 		
 	while(1) {
-			
+
 		uint8_t packetBLE[64];
 		
 		measure_temperature();
-				
+
 		if (!tx_rx_flag) {
 			
 			// Create some BLE packet
 			// gen_test_ble_packet(packetBLE);
 			// gen_ble_packet(packetBLE, AdvA, 37, 32767U);
 			
-			for (fine = 0; fine < 31; ++fine) {
-								
+			for (fine = 0; fine < 32; ++fine) {
+
 				// Load the packet into the arbitrary TX FIFO
 				load_tx_arb_fifo(packetBLE);
 								

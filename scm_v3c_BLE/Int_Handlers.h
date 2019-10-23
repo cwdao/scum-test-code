@@ -872,7 +872,7 @@ void OPTICAL_SFD_ISR(){
 		              LC_sweep_code & 0x1F);
 	}
 	
-	if ((!calibrate_LC && optical_cal_iteration >= 20) || (calibrate_LC && LC_sweep_code >= (30U << 10))) {
+	if ((!calibrate_LC && optical_cal_iteration >= 20) || (calibrate_LC && LC_sweep_code >= (25U << 10))) {
 		if (calibrate_LC) {
 			printf("coarse code: %u, mid code: %u\n", coarse_code, mid_code);
 		}
