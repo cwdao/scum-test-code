@@ -42,6 +42,11 @@ bool calibrate_LC = true;
 uint8_t channel = 37U;
 // ------------------------------------------------------------------------------------------
 
+// ------------------------------------------------------------------------------------------
+// Number of iterations between temperature measurements
+uint8_t measure_temp_period = 40;
+// ------------------------------------------------------------------------------------------
+
 extern unsigned int current_lfsr;
 
 extern uint8_t send_packet[127];
@@ -141,6 +146,7 @@ int main(void) {
 	int t;
 	uint32_t calc_crc;
 	uint8_t fine;
+	uint8_t tx_iteration = 0;
 	
 	uint8_t AdvA[6];
 	
@@ -300,7 +306,10 @@ int main(void) {
 
 		uint8_t packetBLE[64];
 		
-		measure_temperature();
+		if (tx_iteration == measure_temp_period) {
+			measure_temperature();
+			tx_iteration = 0;
+		}
 
 		if (!tx_rx_flag) {
 			
@@ -308,7 +317,8 @@ int main(void) {
 			// gen_test_ble_packet(packetBLE);
 			// gen_ble_packet(packetBLE, AdvA, 37, 32767U);
 			
-			for (fine = 0; fine < 32; ++fine) {
+			// for (fine = 0; fine < 32; ++fine) {
+				fine = 1.194 * temp - 18.439;
 
 				// Load the packet into the arbitrary TX FIFO
 				load_tx_arb_fifo(packetBLE);
@@ -338,11 +348,12 @@ int main(void) {
 				//radio_rfOff();
 				
 				printf("Transmitted on fine %d\n", fine);
-			}
+			// }
 		}
 		
 		// Wait  - this sets packet transmission rate
 		for (t = 0; t < 2000; ++t);
 
+		++tx_iteration;
 	}
 }
