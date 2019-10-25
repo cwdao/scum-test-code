@@ -738,7 +738,7 @@ void RAWCHIPS_STARTVAL_ISR() {
 	ICPR = 0x0300;
 	ISER = 0x0200;
 	
-		// RST_B = 0 (it is active low)
+	// RST_B = 0 (it is active low)
 	ANALOG_CFG_REG__4 = 0x2000;	
 	ANALOG_CFG_REG__4 = 0x2800;
 		

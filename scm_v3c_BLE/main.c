@@ -195,7 +195,7 @@ int main(void) {
 		} else if (channel == 39U) {
 			LC_target = 258160; // channel 39
 		} else {
-			// LC_target = 250100; // channel 37, default, for flexboard
+			// LC_target = 250170; // channel 37, default, for flexboard
 			LC_target = 250020; // channel 37, default, for Q4
 		}
 		
@@ -270,7 +270,7 @@ int main(void) {
 		// The correlation threshold determines whether an interrupt gets thrown
 		// For BLE we need 100% correct bits so we set the Hamming distance to 0 here
 		acfg3_val = 0x60;
-		ANALOG_CFG_REG__3 = acfg3_val;
+		ANALOG_CFG_REG__3 = acfg3_val; // this register has Hamming distance + something else (lower 4 bits?)
 		
 		// Turn on the radio
 		radio_rxEnable();
@@ -303,15 +303,15 @@ int main(void) {
 	}
 		
 	while(1) {
-
-		uint8_t packetBLE[64];
 		
-		if (tx_iteration == measure_temp_period) {
-			measure_temperature();
-			tx_iteration = 0;
-		}
-
 		if (!tx_rx_flag) {
+			
+			uint8_t packetBLE[64];
+			
+			if (tx_iteration == measure_temp_period) {
+				measure_temperature();
+				tx_iteration = 0;
+			}
 			
 			// Create some BLE packet
 			// gen_test_ble_packet(packetBLE);
@@ -349,11 +349,11 @@ int main(void) {
 				
 				printf("Transmitted on fine %d\n", fine);
 			// }
+			
+			++tx_iteration;
+			
+			// Wait  - this sets packet transmission rate
+			for (t = 0; t < 2000; ++t);
 		}
-		
-		// Wait  - this sets packet transmission rate
-		for (t = 0; t < 2000; ++t);
-
-		++tx_iteration;
 	}
 }
