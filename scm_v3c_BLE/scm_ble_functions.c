@@ -511,14 +511,14 @@ void initialize_mote_ble(){
 	//set_ALWAYSON_LDO_voltage(0);
 		
 	// Select banks for GPIO inputs
-	GPI_control(0,0,0,0);
+	GPI_control(2,0,0,0);
 	
 	// Select banks for GPIO outputs
 	GPO_control(4,6,6,10);
 	
 	// Set all GPIOs as outputs
-	GPI_enables(0x0000);	
-	GPO_enables(0xFFFF);
+	GPI_enables(0xFFFF);
+	GPO_enables(0x0000);
 
 	// Set HCLK source as HF_CLOCK
 	set_asc_bit(1147);

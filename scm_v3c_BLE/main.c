@@ -19,7 +19,7 @@
 // False = Transmit
 // True = Receive
 // Both will occur on BLE channel 37 (2.402 GHz)
-bool tx_rx_flag = false;
+bool tx_rx_flag = true;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
@@ -33,7 +33,7 @@ bool sweeping_2M_32k_counters = false;
 // This flag determines whether SCuM should calibrate LC coarse and mid codes
 // False = Not calibrating
 // True = Calibrating
-bool calibrate_LC = true;
+bool calibrate_LC = false;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
@@ -239,11 +239,6 @@ int main(void) {
 	// Disable static divider to save power
 	divProgram(480,0,0);
 
-	// Hard code LO value for TX - works on board #5; 2.402G - 250kHz
-	if (tx_rx_flag == 0) {
-		// LC_monotonic(680);
-	}
-
 	// Some more RX setup
 	if (tx_rx_flag == 1) {
 		// BLE RX only works using the 32-bit raw chips shift register receiver
@@ -263,21 +258,31 @@ int main(void) {
 		// The AA used in this packet is 0x8E89_BED6
 		// But the endianness is flipped for sending so we are searching for 0x6B7D_9171
 		
+		/*
 		// Set up the 32-bit value we are searching for
 		ANALOG_CFG_REG__1 = 0x9171;	//lsbs
 		ANALOG_CFG_REG__2 = 0x6B7D;	//msbs
+		*/
+		
+		ANALOG_CFG_REG__1 = 0xFFFF;
+		ANALOG_CFG_REG__2 = 0xFFFF;
 		
 		// The correlation threshold determines whether an interrupt gets thrown
 		// For BLE we need 100% correct bits so we set the Hamming distance to 0 here
 		acfg3_val = 0x60;
 		ANALOG_CFG_REG__3 = acfg3_val; // this register has Hamming distance + something else (lower 4 bits?)
 		
+		set_asc_bit(1);
+		set_asc_bit(269); // mux sel for M0 clk, 0 dbbclk, 1 DATA_CLK_IN
+		set_asc_bit(270); // mux sel for M0 data, 0 dbbdata, 1 DATA_IN
+		
+		printf("0x%X\n", ASC[8]);
+		
 		// Turn on the radio
 		radio_rxEnable();
 		
 		// Hard code the frequency for now
-		// LC_FREQCHANGE(21,10,16);
-		// LC_FREQCHANGE(23,2,14);
+		LC_FREQCHANGE(23, 16, 15);
 		
 		// Enable the raw chips startval interrupt
 		// This interrupt will go off when 32-bit value is in the shift register
@@ -303,7 +308,7 @@ int main(void) {
 	}
 		
 	while(1) {
-		
+
 		if (!tx_rx_flag) {
 			
 			uint8_t packetBLE[64];
@@ -354,6 +359,32 @@ int main(void) {
 			
 			// Wait  - this sets packet transmission rate
 			for (t = 0; t < 2000; ++t);
+		}
+		
+		else {
+			
+			/*
+			// Set up the 32-bit value we are searching for
+			ANALOG_CFG_REG__1 = 0x9171;	//lsbs
+			ANALOG_CFG_REG__2 = 0x6B7D;	//msbs
+			*/
+			
+			ANALOG_CFG_REG__1 = 0xFFFF;
+			ANALOG_CFG_REG__2 = 0xFFFF;
+			
+			// The correlation threshold determines whether an interrupt gets thrown
+			// For BLE we need 100% correct bits so we set the Hamming distance to 0 here
+			acfg3_val = 0x60;
+			ANALOG_CFG_REG__3 = acfg3_val; // this register has Hamming distance + something else (lower 4 bits?)
+			
+			// Enable the raw chips startval interrupt
+			// This interrupt will go off when 32-bit value is in the shift register
+			// The ISR will then retrieve the packet data and determine if it was valid
+			ISER = 0x0100;
+			
+			for (t = 0; t < 1000000; ++t);
+			printf("Next\n");
+			printf("0x%X\n", ANALOG_CFG_REG__17 + (ANALOG_CFG_REG__18 << 16));
 		}
 	}
 }

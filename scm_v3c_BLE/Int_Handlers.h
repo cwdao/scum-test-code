@@ -701,6 +701,8 @@ void RAWCHIPS_32_ISR() {
 	ANALOG_CFG_REG__3 = acfg3_val;
 	acfg3_val &= ~(0x60);
 	ANALOG_CFG_REG__3 = acfg3_val;
+	
+	printf("123\n");
 }
 
 
@@ -723,7 +725,7 @@ void RAWCHIPS_STARTVAL_ISR() {
 	rdata_msb = ANALOG_CFG_REG__18;
 	chips[chip_index] = rdata_lsb + (rdata_msb << 16);
 	
-	printf("0x%X\n",chips[chip_index]);
+	printf("0x%X\n", chips[chip_index]);
 	
 	chip_index++;
 	
@@ -739,9 +741,8 @@ void RAWCHIPS_STARTVAL_ISR() {
 	ISER = 0x0200;
 	
 	// RST_B = 0 (it is active low)
-	ANALOG_CFG_REG__4 = 0x2000;	
+	ANALOG_CFG_REG__4 = 0x2000;
 	ANALOG_CFG_REG__4 = 0x2800;
-		
 }
 
 // This interrupt goes off every time 32 new bits of data have been shifted into the optical register
