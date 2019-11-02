@@ -33,18 +33,25 @@ bool sweeping_2M_32k_counters = false;
 // This flag determines whether SCuM should calibrate LC coarse and mid codes
 // False = Not calibrating
 // True = Calibrating
-bool calibrate_LC = true;
+bool calibrate_LC = false;
+// ------------------------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------------------------
+// This flag determines whether SCuM should sweep all fine codes after calibration.
+// False = Not sweeping
+// True = Sweeping
+bool sweep_fine_codes = false;
+// ------------------------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------------------------
+// Number of iterations between temperature measurements
+uint8_t measure_temp_period = 2;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
 // This flag determines the BLE channel
 // 37U, 38U, or 39U
 uint8_t channel = 37U;
-// ------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------
-// Number of iterations between temperature measurements
-uint8_t measure_temp_period = 40;
 // ------------------------------------------------------------------------------------------
 
 extern unsigned int current_lfsr;
@@ -143,7 +150,7 @@ void measure_2M_32k_counters() {
 //////////////////////////////////////////////////////////////////
 
 int main(void) {
-	int t;
+	int t, i;
 	uint32_t calc_crc;
 	uint8_t fine;
 	uint8_t tx_iteration = 0;
@@ -195,7 +202,7 @@ int main(void) {
 		} else if (channel == 39U) {
 			LC_target = 258160; // channel 39
 		} else {
-			// LC_target = 250170; // channel 37, default, for flexboard
+			// LC_target = 250020; // channel 37, default, for flexboard
 			LC_target = 250020; // channel 37, default, for Q4
 		}
 		
@@ -316,9 +323,13 @@ int main(void) {
 			// Create some BLE packet
 			// gen_test_ble_packet(packetBLE);
 			// gen_ble_packet(packetBLE, AdvA, 37, 32767U);
-			
-			// for (fine = 0; fine < 32; ++fine) {
-				fine = 1.194 * temp - 18.439;
+
+			for (i = 0; i < 32; ++i) {
+				if (sweep_fine_codes) {
+					fine = i;
+				} else {
+					fine = 1.194 * temp - 18.439;
+				}
 
 				// Load the packet into the arbitrary TX FIFO
 				load_tx_arb_fifo(packetBLE);
@@ -348,8 +359,8 @@ int main(void) {
 				//radio_rfOff();
 				
 				printf("Transmitted on fine %d\n", fine);
-			// }
-			
+			}
+
 			++tx_iteration;
 			
 			// Wait  - this sets packet transmission rate
