@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 
 #include <stdio.h>
+#include <stdint.h>
 #include <time.h>
 #include <rt_misc.h>
 #include <stdlib.h>
@@ -56,6 +57,34 @@ unsigned short doing_initial_packet_search;
 unsigned short current_RF_channel;
 unsigned short do_debug_print = 0;
 
+double temp = 20;
+uint8_t temp_iteration = 0;
+uint32_t cumulative_count_2M = 0;
+uint32_t cumulative_count_32k = 0;
+
+void measure_temperature() {
+	// RFCONTROLLER_REG__INT_CONFIG = 0x3FF;   // Enable all interrupts and pulses to radio timer
+	// RFCONTROLLER_REG__ERROR_CONFIG = 0x1F;  // Enable all errors
+	
+	temp_iteration = 0;
+	cumulative_count_2M = 0;
+	cumulative_count_32k = 0;
+	
+	// Enable RF timer interrupt
+	ISER = 0x0080;
+
+	RFTIMER_REG__CONTROL = 0x7;
+	RFTIMER_REG__MAX_COUNT = 0x0000C350;
+	RFTIMER_REG__COMPARE6 = 0x0000C350;
+	RFTIMER_REG__COMPARE6_CONTROL = 0x03;
+
+	// Reset all counters
+	ANALOG_CFG_REG__0 = 0x0000;
+
+	// Enable all counters
+	ANALOG_CFG_REG__0 = 0x3FFF;
+}
+
 void test_LC_sweep_tx(void) {
 	/*
 	Inputs:
@@ -65,51 +94,52 @@ void test_LC_sweep_tx(void) {
 		been performed.
 	*/
 
-	int coarse, mid, fine;
-	unsigned char iterations = 50;
-	unsigned int i;
+	uint8_t tx_iteration = 0;
+	uint8_t iterations = 100;
+	uint32_t i;
 
 	// Enable the TX. NB: Requires 50us for frequency settling
 	// transient.
 	radio_txEnable();
 	
 	while (1) {
-		for (coarse=22; coarse<25; coarse++) {
-			for (mid=0; mid<32; mid++) {
-				for (fine=0; fine<32; fine++) {
-
-					// Set the LC frequency
-					// LC_FREQCHANGE(23&0x1F, 8&0x1F, 11&0x1F); // for Q4
-					LC_FREQCHANGE(23&0x1F, 15&0x1F, 16&0x1F); // for Q7
-
-					// Send bits out the radio multiple times for redundancy
-					for(i=0; i<iterations; ++i) {
-						// TODO: Wait for at least 50us
-						for (i=0; i<5000; ++i) {}
-						
-						// Construct the packet 
-						// with payload {coarse, mid, fine} in 
-						// separate bytes
-						send_packet[0] = coarse;
-						send_packet[1] = mid;
-						send_packet[2] = fine;
-						radio_loadPacket(3);
-						
-						/*
-						for (i=0; i<5; ++i) {
-							send_packet[i] = 0x5E;
-						}
-						radio_loadPacket(5);
-						*/
-						
-						radio_txNow();
-					}
-					
-					// Wait before next LC frequency
-					for (i=0; i<10000; i++) {}
-				}
-			}
+		if (tx_iteration == 100) {
+			measure_temperature();
+			tx_iteration = 0;
 		}
+		
+					
+		// Set the LC frequency
+		LC_FREQCHANGE(23&0x1F, 8&0x1F, 11&0x1F); // for Q4
+		// LC_FREQCHANGE(23&0x1F, 15&0x1F, 16&0x1F); // for Q7
+
+		// Send bits out the radio multiple times for redundancy
+		for(i=0; i<iterations; ++i) {
+			// TODO: Wait for at least 50us
+			for (i=0; i<5000; ++i) {}
+			
+			// Construct the packet
+			// with payload {coarse, mid, fine} in
+			// separate bytes
+			send_packet[0] = 123;
+			send_packet[1] = (uint8_t) temp;
+			send_packet[2] = (uint8_t) ((uint32_t) (temp * 100) % 100);
+			radio_loadPacket(3);
+			
+			/*
+			for (i=0; i<5; ++i) {
+				send_packet[i] = 0x5E;
+			}
+			radio_loadPacket(5);
+			*/
+			
+			radio_txNow();
+		}
+		
+		// Wait before next LC frequency
+		for (i=0; i<10000; i++) {}
+		
+		tx_iteration++;
 	}
 }
 
@@ -118,7 +148,7 @@ void test_LC_sweep_tx(void) {
 //////////////////////////////////////////////////////////////////
 
 int main(void) {
-	int t,t2,x;
+	int t, t2, x;
 	unsigned int calc_crc;
 
 	unsigned int rdata_lsb, rdata_msb, count_LC, count_32k, count_2M;

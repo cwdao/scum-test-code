@@ -1,10 +1,12 @@
 #include "Memory_Map.h"
 #include "rf_global_vars.h"
 #include <stdio.h>
+#include <stdint.h>
 #include "scm3C_hardware_interface.h"
 #include "scm3_hardware_interface.h"
 #include "scum_radio_bsp.h"
 #include "bucket_o_functions.h"
+#include "fixed-point.h"
 
 extern char send_packet[127];
 extern char recv_packet[130];
@@ -66,6 +68,11 @@ extern unsigned short current_RF_channel;
 
 extern unsigned short do_debug_print;
 
+extern double temp;
+extern uint8_t temp_iteration;
+extern uint32_t cumulative_count_2M, cumulative_count_32k;
+uint32_t count_2M, count_LC, count_32k;
+double ratio;
 
 void UART_ISR(){	
 	static char i=0;
@@ -497,7 +504,43 @@ void RFTIMER_ISR() {
 		radio_txNow();
 		
 	}
-	//if (interrupt & 0x00000040) printf("COMPARE6 MATCH\n");
+	if (interrupt & 0x00000040) {//printf("COMPARE6 MATCH\n");
+		RFTIMER_REG__COMPARE6_CONTROL = 0x00;
+		
+		read_counters(&count_2M, &count_LC, &count_32k);
+		
+		printf("count_2M: %d, count_32k: %d, temp_iteration: %d\n", count_2M, count_32k, temp_iteration);
+		
+		if (temp_iteration == 5) {
+			// Disable this interrupt
+			ICER = 0x0080;
+			
+			ratio = fix_double(fix_div(fix_init(count_2M), fix_init(count_32k)));
+			
+			// Calculate temperature based on average ratio
+			temp = -30.715 * ratio + 1915.142;
+			printf("Temp: %d\n", (int)(temp * 100));
+			
+			temp_iteration = 0;
+			cumulative_count_2M = 0;
+			cumulative_count_32k = 0;
+		} else {
+			temp_iteration += 1;
+			cumulative_count_2M += count_2M;
+			cumulative_count_32k += count_32k;
+			
+			RFTIMER_REG__CONTROL = 0x7;
+			RFTIMER_REG__MAX_COUNT = 0x0000C350;
+			RFTIMER_REG__COMPARE6 = 0x0000C350;
+			RFTIMER_REG__COMPARE6_CONTROL = 0x03;
+
+			// Reset all counters
+			ANALOG_CFG_REG__0 = 0x0000;
+
+			// Enable all counters
+			ANALOG_CFG_REG__0 = 0x3FFF;
+		}
+	}
 	//if (interrupt & 0x00000080) printf("COMPARE7 MATCH\n");
 	//if (interrupt & 0x00000100) printf("CAPTURE0 TRIGGERED AT: 0x%x\n", RFTIMER_REG__CAPTURE0);
 	//if (interrupt & 0x00000200) printf("CAPTURE1 TRIGGERED AT: 0x%x\n", RFTIMER_REG__CAPTURE1);
