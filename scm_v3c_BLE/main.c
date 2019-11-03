@@ -257,26 +257,20 @@ int main(void) {
 		// We want to search for the Access Address (AA) (this assumes we can know this value ahead of time)
 		// The AA used in this packet is 0x8E89_BED6
 		// But the endianness is flipped for sending so we are searching for 0x6B7D_9171
-		
-		/*
+
 		// Set up the 32-bit value we are searching for
 		ANALOG_CFG_REG__1 = 0x9171;	//lsbs
 		ANALOG_CFG_REG__2 = 0x6B7D;	//msbs
-		*/
-		
+
+		/*
 		ANALOG_CFG_REG__1 = 0xFFFF;
 		ANALOG_CFG_REG__2 = 0xFFFF;
+		*/
 		
 		// The correlation threshold determines whether an interrupt gets thrown
 		// For BLE we need 100% correct bits so we set the Hamming distance to 0 here
 		acfg3_val = 0x60;
 		ANALOG_CFG_REG__3 = acfg3_val; // this register has Hamming distance + something else (lower 4 bits?)
-		
-		set_asc_bit(1);
-		set_asc_bit(269); // mux sel for M0 clk, 0 dbbclk, 1 DATA_CLK_IN
-		set_asc_bit(270); // mux sel for M0 data, 0 dbbdata, 1 DATA_IN
-		
-		printf("0x%X\n", ASC[8]);
 		
 		// Turn on the radio
 		radio_rxEnable();
@@ -362,15 +356,15 @@ int main(void) {
 		}
 		
 		else {
-			
-			/*
+
 			// Set up the 32-bit value we are searching for
 			ANALOG_CFG_REG__1 = 0x9171;	//lsbs
 			ANALOG_CFG_REG__2 = 0x6B7D;	//msbs
-			*/
 			
+			/*
 			ANALOG_CFG_REG__1 = 0xFFFF;
 			ANALOG_CFG_REG__2 = 0xFFFF;
+			*/
 			
 			// The correlation threshold determines whether an interrupt gets thrown
 			// For BLE we need 100% correct bits so we set the Hamming distance to 0 here
@@ -383,8 +377,7 @@ int main(void) {
 			ISER = 0x0100;
 			
 			for (t = 0; t < 1000000; ++t);
-			printf("Next\n");
-			printf("0x%X\n", ANALOG_CFG_REG__17 + (ANALOG_CFG_REG__18 << 16));
+			printf("Next: 0x%X\n", ANALOG_CFG_REG__17 + (ANALOG_CFG_REG__18 << 16));
 		}
 	}
 }

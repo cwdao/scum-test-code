@@ -440,8 +440,8 @@ void radio_init_rx_ZCC_BLE(){
 	
 	// Mux select bits to choose internal demod or external clk/data from gpio
 	// '0' = on chip, '1' = external from GPIO
-	clear_asc_bit(269);
-	clear_asc_bit(270);
+	set_asc_bit(269);
+	set_asc_bit(270);
 	
 	// Enable ZCC demod
 	set_asc_bit(132);
@@ -517,8 +517,8 @@ void initialize_mote_ble(){
 	GPO_control(4,6,6,10);
 	
 	// Set all GPIOs as outputs
-	GPI_enables(0xFFFF);
-	GPO_enables(0x0000);
+	GPI_enables(0x000E);
+	GPO_enables(0xFFF1);
 
 	// Set HCLK source as HF_CLOCK
 	set_asc_bit(1147);
