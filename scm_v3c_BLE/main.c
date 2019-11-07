@@ -262,11 +262,6 @@ int main(void) {
 		ANALOG_CFG_REG__1 = 0x9171;	//lsbs
 		ANALOG_CFG_REG__2 = 0x6B7D;	//msbs
 
-		/*
-		ANALOG_CFG_REG__1 = 0xFFFF;
-		ANALOG_CFG_REG__2 = 0xFFFF;
-		*/
-		
 		// The correlation threshold determines whether an interrupt gets thrown
 		// For BLE we need 100% correct bits so we set the Hamming distance to 0 here
 		acfg3_val = 0x60;
@@ -335,10 +330,10 @@ int main(void) {
 								
 				// Wait for frequency to settle
 				for (t = 0; t < 5000; ++t);
-				
+
 				// Send the packet
 				transmit_tx_arb_fifo();
-											
+
 				// Wait for transmission to finish
 				// Don't know if there is some way to know when this has finished or just busy wait (?)
 				for(t = 0; t < 20000; ++t);
@@ -353,31 +348,8 @@ int main(void) {
 			
 			// Wait  - this sets packet transmission rate
 			for (t = 0; t < 2000; ++t);
-		}
-		
-		else {
-
-			// Set up the 32-bit value we are searching for
-			ANALOG_CFG_REG__1 = 0x9171;	//lsbs
-			ANALOG_CFG_REG__2 = 0x6B7D;	//msbs
-			
-			/*
-			ANALOG_CFG_REG__1 = 0xFFFF;
-			ANALOG_CFG_REG__2 = 0xFFFF;
-			*/
-			
-			// The correlation threshold determines whether an interrupt gets thrown
-			// For BLE we need 100% correct bits so we set the Hamming distance to 0 here
-			acfg3_val = 0x60;
-			ANALOG_CFG_REG__3 = acfg3_val; // this register has Hamming distance + something else (lower 4 bits?)
-			
-			// Enable the raw chips startval interrupt
-			// This interrupt will go off when 32-bit value is in the shift register
-			// The ISR will then retrieve the packet data and determine if it was valid
-			ISER = 0x0100;
-			
-			for (t = 0; t < 1000000; ++t);
-			printf("Next: 0x%X\n", ANALOG_CFG_REG__17 + (ANALOG_CFG_REG__18 << 16));
+		} else {
+			// printf("Next: 0x%X\n", ANALOG_CFG_REG__17 + (ANALOG_CFG_REG__18 << 16));
 		}
 	}
 }

@@ -650,14 +650,15 @@ void RAWCHIPS_32_ISR() {
 	// Read 32bit val
 	rdata_lsb = ANALOG_CFG_REG__17;
 	rdata_msb = ANALOG_CFG_REG__18;
-	chips[chip_index] = rdata_lsb + (rdata_msb << 16);	
+	chips[chip_index] = rdata_lsb + (rdata_msb << 16);
+	printf("RAWCHIPS_32: 0x%X\n", chips[chip_index]);
 		
 	
 	//printf("0x%X\n",chips[chip_index]);
 	
 	chip_index++;
 
-	if(chip_index == 7){	
+	if (chip_index == 7) {
 
 	// Target packet - 214 bits		
 	// As transmitted
@@ -679,9 +680,9 @@ void RAWCHIPS_32_ISR() {
 	//0x6EXXXXXX
 				
 	// Check that there were no bit errors in packet
-	if((chips[0] == 0x6B7D9171) && (chips[1] == 0xF1438984) && (chips[2] == 0xF0AB260D) &&
+	if ((chips[0] == 0x6B7D9171) && (chips[1] == 0xF1438984) && (chips[2] == 0xF0AB260D) &&
 		(chips[3] == 0xEE0C2872) && (chips[4] == 0x7924DD6D) && (chips[5] == 0xD05B344B) &&
-	((chips[6] & 0xFF000000) == 0x6E000000)){
+	((chips[6] & 0xFF000000) == 0x6E000000)) {
 		num_valid_packets_received++;
 		
 		printf("BLE PACKET RX!\n");
@@ -723,7 +724,7 @@ void RAWCHIPS_STARTVAL_ISR() {
 	rdata_msb = ANALOG_CFG_REG__18;
 	chips[chip_index] = rdata_lsb + (rdata_msb << 16);
 	
-	printf("STARVAL_ISR: 0x%X\n", chips[chip_index]);
+	printf("STARTVAL_ISR: 0x%X\n", chips[chip_index]);
 	
 	chip_index++;
 
