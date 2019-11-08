@@ -209,7 +209,7 @@ int main(void) {
 	// RX
 	else {
 		// For RX, target LC freq = 2.402G - 2.5M = 2.3995 GHz
-		LC_target = 250000; 
+		LC_target = 249947;
 		
 		// Turn on LO, DIV, IF
 		ANALOG_CFG_REG__10 = 0x58;
@@ -339,7 +339,7 @@ int main(void) {
 				for(t = 0; t < 20000; ++t);
 				
 				// Turn radio back off
-				//radio_rfOff();
+				// radio_rfOff();
 				
 				printf("Transmitted on fine %d\n", fine);
 			// }
@@ -349,6 +349,23 @@ int main(void) {
 			// Wait  - this sets packet transmission rate
 			for (t = 0; t < 2000; ++t);
 		} else {
+			uint8_t rx_coarse, rx_mid, rx_fine;
+
+			radio_enable_interrupts();
+
+			for (rx_coarse = 20; rx_coarse <= 26; ++rx_coarse) {
+				for (rx_mid = 0; rx_mid < 32; ++rx_mid) {
+					for (rx_fine = 0; rx_fine < 32; ++rx_fine) {
+						radio_rfOff();
+						LC_FREQCHANGE(rx_coarse, rx_mid, rx_fine);
+						radio_rxEnable();
+						radio_rxNow();
+
+						for (t = 0; t < 500000; ++t);
+					}
+				}
+			}
+
 			// printf("Next: 0x%X\n", ANALOG_CFG_REG__17 + (ANALOG_CFG_REG__18 << 16));
 		}
 	}
