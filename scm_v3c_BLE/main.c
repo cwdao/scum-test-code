@@ -33,14 +33,14 @@ bool sweeping_2M_32k_counters = false;
 // This flag determines whether SCuM should calibrate LC coarse and mid codes
 // False = Not calibrating
 // True = Calibrating
-bool calibrate_LC = false;
+bool calibrate_LC = true;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
 // This flag determines whether SCuM should sweep all fine codes after calibration.
 // False = Not sweeping
 // True = Sweeping
-bool sweep_fine_codes = false;
+bool sweep_fine_codes = true;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
@@ -100,6 +100,8 @@ uint8_t mid_code = 12;
 //////////////////////////////////////////////////////////////////
 // Temperature Function
 //////////////////////////////////////////////////////////////////
+
+uint32_t count_2M_tx, count_32k_tx;
 
 double temp = 20;
 uint8_t temp_iteration = 0;
@@ -343,7 +345,7 @@ int main(void) {
 				// AdvA[5] = fine;
 				
 				// Generate new packet with LC tuning
-				gen_ble_packet(packetBLE, AdvA, channel, ((coarse_code & 0x1F) << 10) | ((mid_code & 0x1F) << 5) | (fine & 0x1F));
+				gen_ble_packet(packetBLE, AdvA, channel, ((coarse_code & 0x1F) << 10) | ((mid_code & 0x1F) << 5) | (fine & 0x1F), count_2M_tx, count_32k_tx);
 								
 				// Wait for frequency to settle
 				for (t = 0; t < 5000; ++t);

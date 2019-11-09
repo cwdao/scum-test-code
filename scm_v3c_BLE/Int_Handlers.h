@@ -74,6 +74,7 @@ extern double temp;
 extern uint8_t temp_iteration;
 extern uint32_t cumulative_count_2M, cumulative_count_32k;
 uint32_t count_2M, count_LC, count_32k;
+extern uint32_t count_2M_tx, count_32k_tx;
 double ratio;
 unsigned int code;
 
@@ -465,9 +466,7 @@ void RF_ISR() {
 }
 
 void RFTIMER_ISR() {
-	
-	
-	
+
 // COMPARE0 @ t=0
 // setFrequencyRX(channel);
 // 
@@ -581,12 +580,17 @@ void RFTIMER_ISR() {
 			// Disable this interrupt
 			ICER = 0x0080;
 			
-			ratio = fix_double(fix_div(fix_init(count_2M), fix_init(count_32k)));
+			ratio = fix_double(fix_div(fix_init(cumulative_count_2M), fix_init(cumulative_count_32k)));
 			
 			// Calculate temperature based on average ratio
 			temp = -30.715 * ratio + 1915.142;
 			printf("Temp: %d\n", (int)(temp * 100));
 			
+			// Transmit 2M and 32k counters
+			count_2M_tx = cumulative_count_2M / 5;
+			count_32k_tx = cumulative_count_32k / 5;
+			printf("count_2M: %d, count_32k: %d\n", count_2M_tx, count_32k_tx);
+
 			temp_iteration = 0;
 			cumulative_count_2M = 0;
 			cumulative_count_32k = 0;

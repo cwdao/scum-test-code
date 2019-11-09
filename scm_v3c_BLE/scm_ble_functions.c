@@ -14,19 +14,21 @@ const uint8_t BACCESS_ADDRESS3 = 0x91;
 const uint8_t BACCESS_ADDRESS4 = 0x71;
 
 const uint8_t PDU_HEADER1 = 0x40;
-const uint8_t PDU_HEADER2 = 0xA4; // pdu is 37 bytes long (6 bytes adv address + 7 bytes name + 4 bytes temp + 4 bytes LC freq + 16 bytes data)
+const uint8_t PDU_HEADER2 = 0xA4; // pdu is 37 bytes long (6 bytes adv address + 7 bytes name + 4 bytes LC freq + 10 bytes count_32k + 4 bytes temp + 6 bytes data)
 const uint8_t NAME_HEADER1 = 0x60; // name is 6 bytes long (1 byte GAP code + 5 bytes data)
 const uint8_t NAME_HEADER2 = 0x10;
 const uint8_t LC_FREQ_HEADER1 = 0xC0; // LC freq is 3 bytes long (1 byte GAP code + 2 bytes data)
 const uint8_t LC_FREQ_HEADER2 = 0x03; // custom GAP code for LC freq (0xC0 LSB first)
+const uint8_t COUNTERS_HEADER1 = 0x90; // counters is 9 bytes long (1 byte GAP code + 8 bytes data)
+const uint8_t COUNTERS_HEADER2 = 0x43; // custom GAP code for counters (0xC2 LSB first)
 const uint8_t TEMP_HEADER1 = 0xC0; // temp is 3 bytes long (1	byte GAP code + 2 bytes data)
 const uint8_t TEMP_HEADER2 = 0x83; // custom GAP code for temperature (0xC1 LSB first)
-const uint8_t DATA_HEADER1 = 0xF0; // data is 15 bytes long (1 byte GAP code + 14 bytes data)
+const uint8_t DATA_HEADER1 = 0xA0; // data is 5 bytes long (1 byte GAP code + 4 bytes data)
 const uint8_t DATA_HEADER2 = 0x0B; // custom defined for data (0xD0 LSB first)
 
 const uint8_t PDU_LENGTH = 39; // pdu is 39 bytes long
 const uint8_t ADVA_LENGTH = 6; // adv address is 6 bytes long
-const uint8_t DATA_LENGTH = 14; // data is 18 bytes long
+const uint8_t DATA_LENGTH = 4; // data is 4 bytes long
 const uint8_t CRC_LENGTH = 3; // crc is 3 bytes long
 
 extern uint32_t ASC[38];
@@ -43,7 +45,7 @@ extern unsigned int RC2M_superfine;
 
 extern double temp;
 
-void gen_ble_packet(uint8_t *packet, uint8_t *AdvA, uint8_t channel, uint16_t LC_freq) {
+void gen_ble_packet(uint8_t *packet, uint8_t *AdvA, uint8_t channel, uint16_t LC_freq, uint32_t count_2M, uint32_t count_32k) {
 	
 	double k_temp; // Temperature in Kelvin
 	uint16_t temp_payload;
@@ -109,15 +111,36 @@ void gen_ble_packet(uint8_t *packet, uint8_t *AdvA, uint8_t channel, uint16_t LC
 	pdu_pointer++;
 	*pdu_pointer = flipChar(LC_freq & 0xFF); // LC freq LSB
 	pdu_pointer++;
-	
+
+	*pdu_pointer = COUNTERS_HEADER1;
+	pdu_pointer++;
+	*pdu_pointer = COUNTERS_HEADER2;
+	pdu_pointer++;
+	*pdu_pointer = flipChar((count_2M >> 24) & 0xFF); // count_2M MSB
+	pdu_pointer++;
+	*pdu_pointer = flipChar((count_2M >> 16) & 0xFF);
+	pdu_pointer++;
+	*pdu_pointer = flipChar((count_2M >> 8) & 0xFF);
+	pdu_pointer++;
+	*pdu_pointer = flipChar(count_2M & 0xFF); // count_2M LSB
+	pdu_pointer++;
+	*pdu_pointer = flipChar((count_32k >> 24) & 0xFF); // count_32k MSB
+	pdu_pointer++;
+	*pdu_pointer = flipChar((count_32k >> 16) & 0xFF);
+	pdu_pointer++;
+	*pdu_pointer = flipChar((count_32k >> 8) & 0xFF);
+	pdu_pointer++;
+	*pdu_pointer = flipChar(count_32k & 0xFF); // count_32k LSB
+	pdu_pointer++;
+
 	*pdu_pointer = TEMP_HEADER1;
 	pdu_pointer++;
 	*pdu_pointer = TEMP_HEADER2;
 	pdu_pointer++;
-	
+
 	k_temp = temp + 273.15; // Temperature in Kelvin
 	temp_payload = 100 * k_temp + 1; // Floating point error
-	
+
 	*pdu_pointer = flipChar((temp_payload >> 8) & 0xFF); // Temperature MSB
 	pdu_pointer++;
 	*pdu_pointer = flipChar(temp_payload & 0xFF); // Temperature LSB
