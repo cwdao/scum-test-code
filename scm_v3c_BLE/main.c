@@ -204,7 +204,7 @@ int main(void) {
 		} else if (channel == 39U) {
 			LC_target = 258160; // channel 39
 		} else {
-			// LC_target = 250020; // channel 37, default, for flexboard
+			// LC_target = 250182; // channel 37, default, for flexboard
 			LC_target = 250020; // channel 37, default, for Q4
 		}
 		
@@ -324,13 +324,13 @@ int main(void) {
 			
 			// Create some BLE packet
 			// gen_test_ble_packet(packetBLE);
-			// gen_ble_packet(packetBLE, AdvA, 37, 32767U);
+			// gen_ble_packet(packetBLE, AdvA, 37, 32767U, 200000U, 3000U);
 
 			for (i = 0; i < 32; ++i) {
 				if (sweep_fine_codes) {
 					fine = i;
 				} else {
-					fine = 1.194 * temp - 18.439;
+					fine = 1.194 * temp - 12.439;
 				}
 
 				// Load the packet into the arbitrary TX FIFO
