@@ -78,7 +78,7 @@ extern uint32_t count_2M_tx, count_32k_tx;
 double ratio;
 unsigned int code;
 
-extern bool calibrate_LC;
+extern bool calibrate_LC_optical;
 extern uint16_t LC_sweep_code;
 extern uint32_t LC_min_diff;
 
@@ -857,7 +857,7 @@ void OPTICAL_SFD_ISR(){
 	// printf("HF=%d-%d   2M=%d-%d,%d,%d   LC=%d-%d   IF=%d-%d\n",count_HFclock,HF_CLOCK_fine,count_2M,RC2M_coarse,RC2M_fine,RC2M_superfine,count_LC,LC_code,count_IF,IF_fine); 
 	 
 	
-	if (calibrate_LC) {
+	if (calibrate_LC_optical) {
 		if ((count_LC <= LC_target) && (LC_target - count_LC < LC_min_diff)) {			
 			LC_min_diff = LC_target - count_LC;
 			coarse_code = (LC_sweep_code >> 10) & 0x1F;
@@ -876,8 +876,8 @@ void OPTICAL_SFD_ISR(){
 		              LC_sweep_code & 0x1F);
 	}
 	
-	if ((!calibrate_LC && optical_cal_iteration >= 20) || (calibrate_LC && LC_sweep_code >= (25U << 10))) {
-		if (calibrate_LC) {
+	if ((!calibrate_LC_optical && optical_cal_iteration >= 20) || (calibrate_LC_optical && LC_sweep_code >= (25U << 10))) {
+		if (calibrate_LC_optical) {
 			printf("coarse code: %u, mid code: %u\n", coarse_code, mid_code);
 		}
 

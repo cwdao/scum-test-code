@@ -30,10 +30,17 @@ bool sweeping_2M_32k_counters = false;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
-// This flag determines whether SCuM should calibrate LC coarse and mid codes
+// This flag determines whether SCuM should calibrate LC coarse and mid codes with optical SFD
 // False = Not calibrating
 // True = Calibrating
-bool calibrate_LC = true;
+bool calibrate_LC_optical = true;
+// ------------------------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------------------------
+// This flag determines whether SCuM should calibrate LC coarse and mid codes with RFTimer
+// False = Not calibrating
+// True = Calibrating
+bool calibrate_LC_rftimer = false;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
@@ -227,7 +234,7 @@ int main(void) {
 		ANALOG_CFG_REG__16 = 0x1;
 	}
 	
-	if (calibrate_LC) {
+	if (calibrate_LC_optical) {
 		LC_sweep_code = (20U << 10) | (0U << 5) | (15U); // start at coarse=20, mid=0, fine=15
 		LC_min_diff = 1000000U;
 		
