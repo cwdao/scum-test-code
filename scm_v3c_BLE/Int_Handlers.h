@@ -72,6 +72,7 @@ extern unsigned short do_debug_print;
 
 extern double temp;
 extern uint8_t temp_iteration;
+extern uint8_t num_temp_iterations;
 extern uint32_t cumulative_count_2M, cumulative_count_32k;
 uint32_t count_2M, count_LC, count_32k;
 extern uint32_t count_2M_tx, count_32k_tx;
@@ -79,6 +80,10 @@ double ratio;
 unsigned int code;
 
 extern bool calibrate_LC_optical;
+extern bool rftimer_LC_cal_finished;
+extern uint8_t rftimer_LC_cal_iteration;
+extern uint8_t num_rftimer_LC_cal_iterations;
+extern uint32_t cumulative_count_LC;
 extern uint16_t LC_sweep_code;
 extern uint32_t LC_min_diff;
 
@@ -562,21 +567,93 @@ void RFTIMER_ISR() {
 		radio_txEnable();
 		
 	}
-	// Transmit now
-	if (interrupt & 0x00000020){// printf("COMPARE5 MATCH\n");	
-		
-		// Tranmit the packet
-		radio_txNow();
-		
+	// LC calibration
+	if (interrupt & 0x00000020){// printf("COMPARE5 MATCH\n");
+		RFTIMER_REG__COMPARE5_CONTROL = 0x00;
+
+		// Disable all counters
+		ANALOG_CFG_REG__0 = 0x007F;
+
+		// Read LC_div counter (via counter4)
+		rdata_lsb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x280000);
+		rdata_msb = *(unsigned int*)(APB_ANALOG_CFG_BASE + 0x2C0000);
+		count_LC = rdata_lsb + (rdata_msb << 16);
+
+		// Reset all counters
+		ANALOG_CFG_REG__0 = 0x0000;
+
+		// Enable all counters
+		ANALOG_CFG_REG__0 = 0x3FFF;
+
+		if (rftimer_LC_cal_iteration == num_rftimer_LC_cal_iterations) {
+			count_LC = cumulative_count_LC / num_rftimer_LC_cal_iterations;
+			rftimer_LC_cal_iteration = 0;
+			cumulative_count_LC = 0;
+
+			if ((count_LC <= LC_target) && (LC_target - count_LC < LC_min_diff)) {
+				LC_min_diff = LC_target - count_LC;
+				coarse_code = (LC_sweep_code >> 10) & 0x1F;
+				mid_code = (LC_sweep_code >> 5) & 0x1F;
+			} else if ((count_LC > LC_target) && (count_LC - LC_target < LC_min_diff)) {
+				LC_min_diff = count_LC - LC_target;
+				coarse_code = (LC_sweep_code >> 10) & 0x1F;
+				mid_code = (LC_sweep_code >> 5) & 0x1F;
+			}
+
+			printf("count_LC: %u, LC_target: %u, LC_min_diff: %u\n", count_LC, LC_target, LC_min_diff);
+
+			LC_sweep_code += (1 << 5);
+			LC_FREQCHANGE((LC_sweep_code >> 10) & 0x1F,
+										(LC_sweep_code >> 5) & 0x1F,
+										LC_sweep_code & 0x1F);
+
+			if (LC_sweep_code >= (25U << 10)) {
+				printf("coarse code: %u, mid code: %u\n", coarse_code, mid_code);
+
+				// Disable this ISR
+				ICER = 0x0800;
+				rftimer_LC_cal_finished = true;
+
+				// Halt all counters
+				ANALOG_CFG_REG__0 = 0x0000;
+			} else {
+				// Reset the interrupt
+				RFTIMER_REG__CONTROL = 0x7;
+				RFTIMER_REG__MAX_COUNT = 0x0000C350;
+				RFTIMER_REG__COMPARE5 = 0x0000C350;
+				RFTIMER_REG__COMPARE5_CONTROL = 0x03;
+
+				// Reset all counters
+				ANALOG_CFG_REG__0 = 0x0000;
+
+				// Enable all counters
+				ANALOG_CFG_REG__0 = 0x3FFF;
+			}
+		} else {
+			++rftimer_LC_cal_iteration;
+			cumulative_count_LC += count_LC;
+
+			// Reset the interrupt
+			RFTIMER_REG__CONTROL = 0x7;
+			RFTIMER_REG__MAX_COUNT = 0x0000C350;
+			RFTIMER_REG__COMPARE5 = 0x0000C350;
+			RFTIMER_REG__COMPARE5_CONTROL = 0x03;
+
+			// Reset all counters
+			ANALOG_CFG_REG__0 = 0x0000;
+
+			// Enable all counters
+			ANALOG_CFG_REG__0 = 0x3FFF;
+		}
 	}
 	if (interrupt & 0x00000040) {//printf("COMPARE6 MATCH\n");
 		RFTIMER_REG__COMPARE6_CONTROL = 0x00;
 		
 		read_counters(&count_2M, &count_LC, &count_32k);
 		
-		printf("count_2M: %d, count_32k: %d, temp_iteration: %d\n", count_2M, count_32k, temp_iteration);
+		printf("count_2M: %u, count_32k: %u, temp_iteration: %u\n", count_2M, count_32k, temp_iteration);
 		
-		if (temp_iteration == 5) {
+		if (temp_iteration == num_temp_iterations) {
 			// Disable this interrupt
 			ICER = 0x0080;
 			
@@ -587,15 +664,15 @@ void RFTIMER_ISR() {
 			printf("Temp: %d\n", (int)(temp * 100));
 			
 			// Transmit 2M and 32k counters
-			count_2M_tx = cumulative_count_2M / 5;
-			count_32k_tx = cumulative_count_32k / 5;
+			count_2M_tx = cumulative_count_2M / num_temp_iterations;
+			count_32k_tx = cumulative_count_32k / num_temp_iterations;
 			printf("count_2M: %d, count_32k: %d\n", count_2M_tx, count_32k_tx);
 
 			temp_iteration = 0;
 			cumulative_count_2M = 0;
 			cumulative_count_32k = 0;
 		} else {
-			temp_iteration += 1;
+			++temp_iteration;
 			cumulative_count_2M += count_2M;
 			cumulative_count_32k += count_32k;
 			
@@ -855,8 +932,7 @@ void OPTICAL_SFD_ISR(){
 	printf("%u\n", optical_cal_iteration);
 	// Debugging output
 	// printf("HF=%d-%d   2M=%d-%d,%d,%d   LC=%d-%d   IF=%d-%d\n",count_HFclock,HF_CLOCK_fine,count_2M,RC2M_coarse,RC2M_fine,RC2M_superfine,count_LC,LC_code,count_IF,IF_fine); 
-	 
-	
+
 	if (calibrate_LC_optical) {
 		if ((count_LC <= LC_target) && (LC_target - count_LC < LC_min_diff)) {			
 			LC_min_diff = LC_target - count_LC;
@@ -913,7 +989,7 @@ void OPTICAL_SFD_ISR(){
 		//radio_disable_all();
 		
 		// Halt all counters
-		ANALOG_CFG_REG__0 = 0x0000;	
+		ANALOG_CFG_REG__0 = 0x0000;
 				
 		// Turn off clocks
 		// Disable 32k

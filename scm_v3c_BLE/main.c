@@ -92,12 +92,16 @@ unsigned int run_test_flag = 0;
 unsigned int num_packets_to_test = 1;
 
 uint32_t optical_cal_iteration = 0;
-bool optical_cal_finished = 0;
+bool optical_cal_finished = false;
 
 unsigned short doing_initial_packet_search;
 unsigned short current_RF_channel;
 unsigned short do_debug_print = 0;
 
+bool rftimer_LC_cal_finished = false;
+uint8_t rftimer_LC_cal_iteration = 0;
+uint8_t num_rftimer_LC_cal_iterations = 2;
+uint32_t cumulative_count_LC = 0;
 uint16_t LC_sweep_code;
 uint32_t LC_min_diff;
 
@@ -112,6 +116,7 @@ uint32_t count_2M_tx, count_32k_tx;
 
 double temp = 20;
 uint8_t temp_iteration = 0;
+uint8_t num_temp_iterations = 5;
 uint32_t cumulative_count_2M = 0;
 uint32_t cumulative_count_32k = 0;
 
@@ -214,13 +219,13 @@ int main(void) {
 			// LC_target = 250182; // channel 37, default, for flexboard
 			LC_target = 250020; // channel 37, default, for Q4
 		}
-		
+
 		// Turn on LO, DIV, PA
 		ANALOG_CFG_REG__10 = 0x68;
-		
+
 		// Turn off polyphase and disable mixer
 		ANALOG_CFG_REG__16 = 0x6;
-		
+
 	}
 	// RX
 	else {
@@ -234,8 +239,8 @@ int main(void) {
 		ANALOG_CFG_REG__16 = 0x1;
 	}
 	
-	if (calibrate_LC_optical) {
-		LC_sweep_code = (20U << 10) | (0U << 5) | (15U); // start at coarse=20, mid=0, fine=15
+	if (calibrate_LC_optical || calibrate_LC_rftimer) {
+		LC_sweep_code = (21U << 10) | (0U << 5) | (15U); // start at coarse=21, mid=0, fine=15
 		LC_min_diff = 1000000U;
 		
 		LC_FREQCHANGE((LC_sweep_code >> 10) & 0x1F,
@@ -247,11 +252,35 @@ int main(void) {
 	ISER = 0x0800;
 		
 	// Wait for optical cal to finish
-	while (optical_cal_finished == 0);
-	optical_cal_finished = 0;
+	while (!optical_cal_finished);
+	optical_cal_finished = false;
 	
 	printf("Cal complete\n");
 	
+	if (calibrate_LC_rftimer) {
+		rftimer_LC_cal_finished = false;
+		rftimer_LC_cal_iteration = 0;
+		cumulative_count_LC = 0;
+
+		// Enable RF timer interrupt
+		ISER = 0x0080;
+
+		RFTIMER_REG__CONTROL = 0x7;
+		RFTIMER_REG__MAX_COUNT = 0x0000C350;
+		RFTIMER_REG__COMPARE5 = 0x0000C350;
+		RFTIMER_REG__COMPARE5_CONTROL = 0x03;
+
+		// Reset all counters
+		ANALOG_CFG_REG__0 = 0x0000;
+
+		// Enable all counters
+		ANALOG_CFG_REG__0 = 0x3FFF;
+
+		// Wait for LC calibration to finish
+		while (!rftimer_LC_cal_finished);
+		rftimer_LC_cal_finished = false;
+	}
+
 	// Disable static divider to save power
 	divProgram(480,0,0);
 
@@ -319,16 +348,16 @@ int main(void) {
 	}
 		
 	while(1) {
-		
+
 		if (!tx_rx_flag) {
-			
+
 			uint8_t packetBLE[64];
-			
+
 			if (tx_iteration == measure_temp_period) {
 				measure_temperature();
 				tx_iteration = 0;
 			}
-			
+
 			// Create some BLE packet
 			// gen_test_ble_packet(packetBLE);
 			// gen_ble_packet(packetBLE, AdvA, 37, 32767U, 200000U, 3000U);
