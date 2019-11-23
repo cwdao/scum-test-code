@@ -23,6 +23,12 @@ bool tx_rx_flag = true;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
+// This determines the maximum Hamming distance for BLE RX packets.
+// Between 0U and 31U
+uint8_t hamming_distance = 3U;
+// ------------------------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------------------------
 // This flag determines whether SCuM is sweeping the 2M and 32k counters
 // False = Not sweeping
 // True = Sweeping
@@ -264,8 +270,8 @@ int main(void) {
 
 		// The correlation threshold determines whether an interrupt gets thrown
 		// For BLE we need 100% correct bits so we set the Hamming distance to 0 here
-		acfg3_val = 0x60;
-		ANALOG_CFG_REG__3 = acfg3_val; // this register has Hamming distance + something else (lower 4 bits?)
+		acfg3_val = 0x60 | (hamming_distance & 0x1F);
+		ANALOG_CFG_REG__3 = acfg3_val; // [9 bits of other unimportant stuff, clear_interrupt_startval, clear_interrupt32, correlation threshold (5 bits)]
 		
 		// Turn on the radio
 		radio_rxEnable();
@@ -353,15 +359,15 @@ int main(void) {
 
 			radio_enable_interrupts();
 
-			for (rx_coarse = 20; rx_coarse <= 26; ++rx_coarse) {
-				for (rx_mid = 0; rx_mid < 32; ++rx_mid) {
+			for (rx_coarse = 23; rx_coarse <= 23; ++rx_coarse) {
+				for (rx_mid = 16; rx_mid <= 17; ++rx_mid) {
 					for (rx_fine = 0; rx_fine < 32; ++rx_fine) {
 						radio_rfOff();
 						LC_FREQCHANGE(rx_coarse, rx_mid, rx_fine);
 						radio_rxEnable();
 						radio_rxNow();
 
-						for (t = 0; t < 500000; ++t);
+						for (t = 0; t < 750000; ++t);
 					}
 				}
 			}
