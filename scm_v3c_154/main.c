@@ -25,11 +25,11 @@ extern unsigned int ASC[38];
 #define crc_value         (*((unsigned int *) 0x0000FFFC))
 #define code_length       (*((unsigned int *) 0x0000FFF8))
 
-// Target radio LO freq = 2.4025G
+// Target radio LO freq = 2.4055G
 // Divide ratio is currently 480*2
 // Calibration counts for 100ms
-unsigned int LC_target = 250187;
-unsigned int LC_code = 680;
+unsigned int LC_target = 250572;
+unsigned int LC_code = 690;
 
 // HF_CLOCK tuning settings
 unsigned int HF_CLOCK_fine = 17;
@@ -95,50 +95,61 @@ void test_LC_sweep_tx(void) {
 	*/
 
 	uint8_t tx_iteration = 0;
-	uint8_t iterations = 100;
-	uint32_t i;
+	uint8_t iterations = 32;
+	uint32_t i, j;
+
+	// Set the LC frequency
+	// For Q4 with PA set to 63
+	// LC_FREQCHANGE(23&0x1F, 8&0x1F, 11&0x1F); // channel 11
+	// LC_FREQCHANGE(23&0x1F, 15&0x1F, 6&0x1F); // channel 12
+	// LC_FREQCHANGE(26&0x1F, 10&0x1F, 9&0x1F); // channel 20
+
+	// For flexboard on paper with PA set to 63
+	// LC_FREQCHANGE(23&0x1F, 12&0x1F, 13&0x1F); // channel 11
+
+	// For flexboard on paper with PA set to 127
+	LC_FREQCHANGE(23&0x1F, 12&0x1F, 6&0x1F); // channel 11
+	// LC_FREQCHANGE(28&0x1F, 12&0x1F, 14&0x1F); // channel 26
 
 	// Enable the TX. NB: Requires 50us for frequency settling
 	// transient.
 	radio_txEnable();
 	
 	while (1) {
-		if (tx_iteration == 100) {
+		if (tx_iteration == 5) {
 			measure_temperature();
 			tx_iteration = 0;
 		}
-		
-					
-		// Set the LC frequency
-		LC_FREQCHANGE(23&0x1F, 8&0x1F, 11&0x1F); // for Q4
-		// LC_FREQCHANGE(23&0x1F, 15&0x1F, 16&0x1F); // for Q7
 
 		// Send bits out the radio multiple times for redundancy
-		for(i=0; i<iterations; ++i) {
+		for(i = 0; i < iterations; ++i) {
+
+			// LC_FREQCHANGE(23&0x1F, 12&0x1F, i&0x1F); // channel 11
+
 			// TODO: Wait for at least 50us
-			for (i=0; i<5000; ++i) {}
-			
+			for (j = 0; j < 5000; ++j) {}
+
 			// Construct the packet
 			// with payload {coarse, mid, fine} in
 			// separate bytes
-			send_packet[0] = 123;
+			send_packet[0] = i & 0x1F;
 			send_packet[1] = (uint8_t) temp;
 			send_packet[2] = (uint8_t) ((uint32_t) (temp * 100) % 100);
 			radio_loadPacket(3);
-			
+
 			/*
-			for (i=0; i<5; ++i) {
-				send_packet[i] = 0x5E;
+			for (j=0; j<5; ++j) {
+				send_packet[j] = 0x5E;
 			}
 			radio_loadPacket(5);
 			*/
-			
+
 			radio_txNow();
 		}
-		
+
 		// Wait before next LC frequency
-		for (i=0; i<10000; i++) {}
-		
+		for (j=0; j<10000; ++j) {}
+
 		tx_iteration++;
 	}
 }
@@ -163,7 +174,7 @@ int main(void) {
 	printf("\n-------------------\n");
 	printf("Validating program integrity..."); 
 	
-	calc_crc = crc32c(0x0000,code_length);
+	calc_crc = crc32c(0x0000, code_length);
 
 	if(calc_crc == crc_value){
 		printf("CRC OK\n");

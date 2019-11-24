@@ -796,7 +796,6 @@ void radio_init_rx_ZCC(){
 
 
 void radio_init_tx(){
-	
 	// Set up 15.4 modulation source
 	// ----
 	// For FPGA, the TX modulation comes in at the external pad so need to set the mod_logic mux to route this signal for modulation
@@ -813,7 +812,6 @@ void radio_init_tx(){
 	//set_asc_bit(999);
 	// ----
 
-	
 	// Set 15.4 modulation tone spacing
 	// ----
 	// The correct tone spacing is 1 MHz.  This requires adjusting the cap DAC in the TX
@@ -822,7 +820,7 @@ void radio_init_tx(){
 	set_asc_bit(1000);
 	set_asc_bit(1001);
 	set_asc_bit(1002);
-	
+
 	// set dummy bit to 1
 	set_asc_bit(1003);
 	// ----
@@ -834,48 +832,46 @@ void radio_init_tx(){
 	// Force TX to output the 'high' FSK tone
 	//set_asc_bit(999);
 	//clear_asc_bit(998);
-	
+
 	// Force TX to output the 'low' FSK tone
 	//clear_asc_bit(999);
 	//set_asc_bit(998);
 	// -----------------
 
-	
 	// Need to set analog_cfg<183> to 1 to select 15.4 for chips out
 	ANALOG_CFG_REG__11 = 0x0080;
 	
 	// Set current in LC tank
 	set_LC_current(127);
-	
+
 	// Set LDO voltages for PA and LO
-	set_PA_supply(63);
+	set_PA_supply(127);
 	set_LO_supply(127,0);
-	
+
 	// Ensure cortex control of LO
 	clear_asc_bit(964);
-	
+
 	// Ensure cortex control of divider
 	clear_asc_bit(1081);
 }
 
 void radio_init_divider(unsigned int div_value){
-	
+
 	// Set divider LDO value to max
 	set_DIV_supply(40,0);
 
 	// Set prescaler to div-by-2
 	prescaler(4);
-	
+
 	// Activate 8MHz/20MHz output
 	//set_asc_bit(1033);
 	
 	// set divider to div-by-480
 	divProgram(480,1,1);
-	
+
 	// Set sel12 = 1 (choose whether x2 is active)
 	// Want this set to 1 or else the divider output falling edges will be messed up
 	set_asc_bit(1012);
-		
 }
 
 void read_counters_3B(unsigned int* count_2M, unsigned int* count_LC, unsigned int* count_adc){
@@ -1335,17 +1331,18 @@ void LC_FREQCHANGE(int coarse, int mid, int fine){
   fcode |= (unsigned int)(coarse_f >> 3);
     
   fcode2 |= (unsigned int)((fine_f&0x80) >> 7);
-	
+
 	//printf("%X\n",fcode);
 	//printf("%X\n",fcode2);
-		
+
 	// ACFG_LO_ADDR   = [ f1 | f2 | f3 | f4 | md | m0 | m1 | m2 | m3 | m4 | cd | c0 | c1 | c2 | c3 | c4 ]
 	// ACFG_LO_ADDR_2 = [ xx | xx | xx | xx | xx | xx | xx | xx | xx | xx | xx | xx | xx | xx | fd | f0 ]
 	    
   // set the memory and prevent any overwriting of other analog config
   ANALOG_CFG_REG__7 = fcode;
   ANALOG_CFG_REG__8 = fcode2;
-		
+
+	printf("coarse: %d, mid: %d, fine: %d\n", coarse, mid, fine);
 }
 void LC_monotonic(int LC_code){
 

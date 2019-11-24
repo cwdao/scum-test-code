@@ -508,19 +508,19 @@ void RFTIMER_ISR() {
 		RFTIMER_REG__COMPARE6_CONTROL = 0x00;
 		
 		read_counters(&count_2M, &count_LC, &count_32k);
-		
+		printf("count_LC: %d\n", count_LC);
 		printf("count_2M: %d, count_32k: %d, temp_iteration: %d\n", count_2M, count_32k, temp_iteration);
-		
+
 		if (temp_iteration == 5) {
 			// Disable this interrupt
 			ICER = 0x0080;
-			
-			ratio = fix_double(fix_div(fix_init(count_2M), fix_init(count_32k)));
-			
+
+			ratio = fix_double(fix_div(fix_init(cumulative_count_2M), fix_init(cumulative_count_32k)));
+
 			// Calculate temperature based on average ratio
 			temp = -30.715 * ratio + 1915.142;
 			printf("Temp: %d\n", (int)(temp * 100));
-			
+
 			temp_iteration = 0;
 			cumulative_count_2M = 0;
 			cumulative_count_32k = 0;
@@ -528,7 +528,7 @@ void RFTIMER_ISR() {
 			temp_iteration += 1;
 			cumulative_count_2M += count_2M;
 			cumulative_count_32k += count_32k;
-			
+
 			RFTIMER_REG__CONTROL = 0x7;
 			RFTIMER_REG__MAX_COUNT = 0x0000C350;
 			RFTIMER_REG__COMPARE6 = 0x0000C350;
