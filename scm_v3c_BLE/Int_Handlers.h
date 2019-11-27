@@ -651,7 +651,7 @@ void RFTIMER_ISR() {
 		
 		read_counters(&count_2M, &count_LC, &count_32k);
 		
-		printf("count_2M: %u, count_32k: %u, temp_iteration: %u\n", count_2M, count_32k, temp_iteration);
+		// printf("count_2M: %u, count_32k: %u, temp_iteration: %u\n", count_2M, count_32k, temp_iteration);
 		
 		if (temp_iteration == num_temp_iterations) {
 			// Disable this interrupt
@@ -666,7 +666,7 @@ void RFTIMER_ISR() {
 			// Transmit 2M and 32k counters
 			count_2M_tx = cumulative_count_2M / num_temp_iterations;
 			count_32k_tx = cumulative_count_32k / num_temp_iterations;
-			printf("count_2M: %d, count_32k: %d\n", count_2M_tx, count_32k_tx);
+			// printf("count_2M: %d, count_32k: %d\n", count_2M_tx, count_32k_tx);
 
 			temp_iteration = 0;
 			cumulative_count_2M = 0;

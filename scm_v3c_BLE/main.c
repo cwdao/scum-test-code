@@ -33,7 +33,7 @@ bool sweeping_2M_32k_counters = false;
 // This flag determines whether SCuM should calibrate LC coarse and mid codes with optical SFD
 // False = Not calibrating
 // True = Calibrating
-bool calibrate_LC_optical = true;
+bool calibrate_LC_optical = false;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
@@ -52,7 +52,7 @@ bool sweep_fine_codes = true;
 
 // ------------------------------------------------------------------------------------------
 // Number of iterations between temperature measurements
-uint8_t measure_temp_period = 2;
+uint8_t measure_temp_period = 1;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
@@ -362,7 +362,7 @@ int main(void) {
 			// gen_test_ble_packet(packetBLE);
 			// gen_ble_packet(packetBLE, AdvA, 37, 32767U, 200000U, 3000U);
 
-			for (i = 0; i < 32; ++i) {
+			for (i = 0; i < 16; ++i) {
 				if (sweep_fine_codes) {
 					fine = i;
 				} else {
@@ -378,7 +378,7 @@ int main(void) {
 				// Tune frequency
 				LC_FREQCHANGE(coarse_code, mid_code, fine);
 				
-				// AdvA[5] = fine;
+				AdvA[5] = fine;
 				
 				// Generate new packet with LC tuning
 				gen_ble_packet(packetBLE, AdvA, channel, ((coarse_code & 0x1F) << 10) | ((mid_code & 0x1F) << 5) | (fine & 0x1F), count_2M_tx, count_32k_tx);
@@ -396,7 +396,7 @@ int main(void) {
 				// Turn radio back off
 				//radio_rfOff();
 				
-				printf("Transmitted on fine %d\n", fine);
+				// printf("Transmitted on fine %d\n", fine);
 			}
 
 			++tx_iteration;

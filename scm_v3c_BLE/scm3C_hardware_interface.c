@@ -1418,7 +1418,7 @@ void LC_FREQCHANGE(unsigned int coarse, unsigned int mid, unsigned int fine){
   ANALOG_CFG_REG__7 = fcode;
   ANALOG_CFG_REG__8 = fcode2;
 	
-	printf("coarse: %d, mid: %d, fine: %d\n", coarse, mid, fine);
+	// printf("coarse: %d, mid: %d, fine: %d\n", coarse, mid, fine);
 		
 }
 
