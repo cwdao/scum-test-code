@@ -15,6 +15,7 @@
 #include "bucket_o_functions.h"
 #include <math.h>
 #include "scum_radio_bsp.h"
+#include "spi.h"
 
 extern unsigned int current_lfsr;
 
@@ -105,10 +106,10 @@ void test_LC_sweep_tx(void) {
 	// LC_FREQCHANGE(26&0x1F, 10&0x1F, 9&0x1F); // channel 20
 
 	// For Q4 with PA set to 127
-	LC_FREQCHANGE(23&0x1F, 8&0x1F, 9&0x1F); // channel 11
+	// LC_FREQCHANGE(23&0x1F, 8&0x1F, 9&0x1F); // channel 11
 
 	// For QX7 with PA set to 127
-	// LC_FREQCHANGE(23&0x1F, 27&0x1F, 23&0x1F); // channel 11
+	LC_FREQCHANGE(23&0x1F, 27&0x1F, 23&0x1F); // channel 11
 
 	// For flexboard on paper with PA set to 63
 	// LC_FREQCHANGE(23&0x1F, 12&0x1F, 13&0x1F); // channel 11
@@ -140,7 +141,7 @@ void test_LC_sweep_tx(void) {
 			// separate bytes
 			send_packet[0] = i & 0x1F;
 			send_packet[1] = (uint8_t) temp;
-			send_packet[2] = (uint8_t) ((uint32_t) (temp * 100) % 100);
+			send_packet[2] = (uint8_t) test_imu_life();
 			radio_loadPacket(3);
 
 			/*
