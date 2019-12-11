@@ -851,8 +851,7 @@ void OPTICAL_SFD_ISR(){
 	printf("%u\n", optical_cal_iteration);
 	// Debugging output
 	// printf("HF=%d-%d   2M=%d-%d,%d,%d   LC=%d-%d   IF=%d-%d\n",count_HFclock,HF_CLOCK_fine,count_2M,RC2M_coarse,RC2M_fine,RC2M_superfine,count_LC,LC_code,count_IF,IF_fine); 
-	 
-	
+
 	if (calibrate_LC) {
 		if ((count_LC <= LC_target) && (LC_target - count_LC < LC_min_diff)) {			
 			LC_min_diff = LC_target - count_LC;

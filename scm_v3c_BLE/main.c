@@ -25,7 +25,7 @@ bool tx_rx_flag = true;
 // ------------------------------------------------------------------------------------------
 // This determines the maximum Hamming distance for BLE RX packets.
 // Between 0U and 31U
-uint8_t hamming_distance = 3U;
+uint8_t hamming_distance = 2U;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
@@ -75,9 +75,9 @@ unsigned int RC2M_fine = 15;
 unsigned int RC2M_superfine = 15;
 
 // Receiver clock settings
-unsigned int IF_clk_target = 1900000;
-unsigned int IF_coarse = 11;
-unsigned int IF_fine = 18;
+unsigned int IF_clk_target = 1898300;
+unsigned int IF_coarse = 14;
+unsigned int IF_fine = 11;
 
 unsigned int cal_iteration = 0;
 unsigned int run_test_flag = 0;
@@ -241,7 +241,7 @@ int main(void) {
 	optical_cal_finished = 0;
 	
 	printf("Cal complete\n");
-	
+
 	// Disable static divider to save power
 	divProgram(480,0,0);
 
@@ -360,8 +360,8 @@ int main(void) {
 			radio_enable_interrupts();
 
 			for (rx_coarse = 23; rx_coarse <= 23; ++rx_coarse) {
-				for (rx_mid = 16; rx_mid <= 17; ++rx_mid) {
-					for (rx_fine = 0; rx_fine < 32; ++rx_fine) {
+				for (rx_mid = 8; rx_mid <= 8; ++rx_mid) {
+					for (rx_fine = 10; rx_fine < 20; ++rx_fine) {
 						radio_rfOff();
 						LC_FREQCHANGE(rx_coarse, rx_mid, rx_fine);
 						radio_rxEnable();
