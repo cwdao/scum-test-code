@@ -687,8 +687,10 @@ void RAWCHIPS_32_ISR() {
 		
 		printf("BLE PACKET RX!\n");
 	}
-		
-		
+
+	// Set GPIO low after packet received.
+	GPIO_REG__OUTPUT = 0x0000;
+
 	// Set NVIC back up to receive another packet
 	ICER = 0x0200;
 	ICPR = 0x0300;
@@ -723,6 +725,9 @@ void RAWCHIPS_STARTVAL_ISR() {
 	rdata_lsb = ANALOG_CFG_REG__17;
 	rdata_msb = ANALOG_CFG_REG__18;
 	chips[chip_index] = rdata_lsb + (rdata_msb << 16);
+
+	// Set GPIO high when packet received.
+	GPIO_REG__OUTPUT = 0xFFFF;
 	
 	printf("STARTVAL_ISR: 0x%X\n", chips[chip_index]);
 	
