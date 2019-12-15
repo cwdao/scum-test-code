@@ -360,8 +360,8 @@ int main(void) {
 			radio_enable_interrupts();
 
 			for (rx_coarse = 23; rx_coarse <= 23; ++rx_coarse) {
-				for (rx_mid = 8; rx_mid <= 8; ++rx_mid) {
-					for (rx_fine = 10; rx_fine < 20; ++rx_fine) {
+				for (rx_mid = 24; rx_mid <= 24; ++rx_mid) {
+					for (rx_fine = 15; rx_fine < 16; ++rx_fine) {
 						radio_rfOff();
 						LC_FREQCHANGE(rx_coarse, rx_mid, rx_fine);
 						radio_rxEnable();
