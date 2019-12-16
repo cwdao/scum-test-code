@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-void gen_ble_packet(uint8_t *packet, uint8_t *AdvA, uint8_t channel, uint16_t LC_freq, uint32_t count_2M, uint32_t count_32k);
+void gen_ble_packet(uint8_t *packet, uint8_t *AdvA, uint8_t channel, uint16_t LC_freq, double temp, uint32_t count_2M, uint32_t count_32k);
 void radio_init_tx_BLE(void);
 void gen_test_ble_packet(uint8_t *packet);
 void load_tx_arb_fifo(uint8_t *packet);

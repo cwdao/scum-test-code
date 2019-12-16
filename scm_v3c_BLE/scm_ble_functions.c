@@ -43,9 +43,7 @@ extern unsigned int RC2M_coarse;
 extern unsigned int RC2M_fine;
 extern unsigned int RC2M_superfine;
 
-extern double temp;
-
-void gen_ble_packet(uint8_t *packet, uint8_t *AdvA, uint8_t channel, uint16_t LC_freq, uint32_t count_2M, uint32_t count_32k) {
+void gen_ble_packet(uint8_t *packet, uint8_t *AdvA, uint8_t channel, uint16_t LC_freq, double temp, uint32_t count_2M, uint32_t count_32k) {
 	
 	double k_temp; // Temperature in Kelvin
 	uint16_t temp_payload;
