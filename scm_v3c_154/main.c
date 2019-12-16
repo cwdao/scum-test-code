@@ -115,7 +115,7 @@ void test_LC_sweep_tx(void) {
 	// LC_FREQCHANGE(23&0x1F, 12&0x1F, 13&0x1F); // channel 11
 
 	// For flexboard on paper with PA set to 127
-	// LC_FREQCHANGE(23&0x1F, 12&0x1F, 16&0x1F); // channel 11
+	// LC_FREQCHANGE(23&0x1F, 14&0x1F, 24&0x1F); // channel 11
 	// LC_FREQCHANGE(28&0x1F, 12&0x1F, 14&0x1F); // channel 26
 
 	// Enable the TX. NB: Requires 50us for frequency settling
