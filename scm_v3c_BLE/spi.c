@@ -53,7 +53,6 @@ void spi_chip_deselect() {
 
 uint32_t read_acc_x() {
     uint32_t acc_x;
-    uint8_t read_byte;
     uint8_t write_byte = 0x2D;
 
     acc_x = (read_imu_register(write_byte)) << 8;   
@@ -65,7 +64,6 @@ uint32_t read_acc_x() {
 
 uint32_t read_acc_y() {
     uint32_t acc_y;
-    uint8_t read_byte;
     uint8_t write_byte = 0x2F;
 
     acc_y = (read_imu_register(write_byte)) << 8;   
@@ -77,7 +75,6 @@ uint32_t read_acc_y() {
 
 uint32_t read_acc_z() {
     uint32_t acc_z;
-    uint8_t read_byte;
     uint8_t write_byte = 0x31;
 
     acc_z = (read_imu_register(write_byte)) << 8;
@@ -85,6 +82,17 @@ uint32_t read_acc_z() {
     acc_z |= read_imu_register(write_byte);
 
     return acc_z;
+}
+
+uint32_t read_temp() {
+    uint32_t temp;
+    uint8_t write_byte = 0x39;
+
+    temp = (read_imu_register(write_byte)) << 8;
+    write_byte = 0x3A;
+    temp |= read_imu_register(write_byte);
+
+    return temp;
 }
 
 uint8_t test_imu_life() {

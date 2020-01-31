@@ -34,7 +34,7 @@ bool sweeping_2M_32k_counters = false;
 // This flag determines whether SCuM should calibrate LC coarse and mid codes with optical SFD
 // False = Not calibrating
 // True = Calibrating
-bool calibrate_LC_optical = true;
+bool calibrate_LC_optical = false;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
@@ -48,7 +48,14 @@ bool calibrate_LC_rftimer = false;
 // This flag determines whether SCuM should sweep all fine codes after calibration.
 // False = Not sweeping
 // True = Sweeping
-bool sweep_fine_codes = true;
+bool sweep_fine_codes = false;
+// ------------------------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------------------------
+// This flag determines whether SCuM should turn on the IMU.
+// False = IMU off
+// True = IMU on
+bool imu_on = false;
 // ------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
@@ -106,8 +113,8 @@ uint32_t cumulative_count_LC = 0;
 uint16_t LC_sweep_code;
 uint32_t LC_min_diff;
 
-uint8_t coarse_code = 23;
-uint8_t mid_code = 12;
+uint8_t coarse_code = 24;
+uint8_t mid_code = 17;
 
 //////////////////////////////////////////////////////////////////
 // Temperature Function
@@ -347,6 +354,13 @@ int main(void) {
 		}
 	}
 
+	if (imu_on) {
+		write_imu_register(0x06, 0x41);
+		for (t = 0; t < 50000; ++t);
+		write_imu_register(0x06, 0x01);
+		for (t = 0; t < 50000; ++t);
+	}
+
 	while(1) {
 
 		if (!tx_rx_flag) {
@@ -366,7 +380,7 @@ int main(void) {
 				if (sweep_fine_codes) {
 					fine = i;
 				} else {
-					fine = 1.194 * temp - 12.439;
+					fine = 15;
 				}
 
 				// Load the packet into the arbitrary TX FIFO
@@ -381,7 +395,7 @@ int main(void) {
 				// AdvA[5] = fine;
 
 				// Generate new packet with LC tuning
-				gen_ble_packet(packetBLE, AdvA, channel, ((coarse_code & 0x1F) << 10) | ((mid_code & 0x1F) << 5) | (fine & 0x1F), temp, count_2M_tx, count_32k_tx);
+				gen_ble_packet(packetBLE, AdvA, channel, ((coarse_code & 0x1F) << 10) | ((mid_code & 0x1F) << 5) | (fine & 0x1F), temp, read_acc_x(), read_acc_z());
 
 				// Wait for frequency to settle
 				for (t = 0; t < 5000; ++t);

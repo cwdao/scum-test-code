@@ -9,6 +9,8 @@ void spi_chip_deselect(void);
 uint32_t read_acc_x(void);
 uint32_t read_acc_y(void);
 uint32_t read_acc_z(void);
+// Temperature read function
+uint32_t read_temp(void);
 uint8_t test_imu_life(void);
 // IMU-specific read/write functions
 uint8_t read_imu_register(uint8_t reg);
