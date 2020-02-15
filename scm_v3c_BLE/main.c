@@ -106,7 +106,7 @@ uint16_t LC_sweep_code;
 uint32_t LC_min_diff;
 
 uint8_t coarse_code = 23;
-uint8_t mid_code = 12;
+uint8_t mid_code = 11;
 
 //////////////////////////////////////////////////////////////////
 // Temperature Function
@@ -202,7 +202,6 @@ int main(void) {
 	// For MUX signals, '1' = FSM control, '0' = memory mapped control
 	// For EN signals, '1' = turn on LDO
 	
-
 	// TX
 	if (!tx_rx_flag){
 
@@ -381,7 +380,7 @@ int main(void) {
 				// AdvA[5] = fine;
 				
 				// Generate new packet with LC tuning
-				gen_ble_packet(packetBLE, AdvA, channel, ((coarse_code & 0x1F) << 10) | ((mid_code & 0x1F) << 5) | (fine & 0x1F), count_2M_tx, count_32k_tx);
+			    gen_ble_packet(packetBLE, AdvA, channel, ((coarse_code & 0x1F) << 10) | ((mid_code & 0x1F) << 5) | (fine & 0x1F), count_2M_tx, count_32k_tx);
 								
 				// Wait for frequency to settle
 				for (t = 0; t < 5000; ++t);

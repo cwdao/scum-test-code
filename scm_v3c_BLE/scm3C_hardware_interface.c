@@ -876,7 +876,7 @@ void radio_init_divider(unsigned int div_value){
 	//int j;
 	
 	// Set divider LDO value to max
-	set_DIV_supply(63,0);
+	set_DIV_supply(127,0);
 
 	// Disable /5 prescaler
 	//clear_asc_bit(1023);		//en
@@ -1518,26 +1518,25 @@ void disable_1mhz_ble_ASC() {
 	ASC[32] |= 0x00060000;
 }
 void set_PA_supply(unsigned int code) {
-	// 7-bit setting (between 0 and 127)
-	// MSB is a "panic" bit that engages the high-voltage settings
-	unsigned int code_ASC = ((~code)&0x0000007F) << 13;
-	ASC[30] &= 0xFFF01FFF;
-	ASC[30] |= code_ASC;
-	
+    // 7-bit setting (between 0 and 127)
+    // MSB is a "panic" bit that engages the high-voltage settings
+    unsigned int code_ASC = ((~code)&0x0000007F) << 13;
+    ASC[30] &= 0xFFF01FFF;
+    ASC[30] |= code_ASC;
 }
 void set_LO_supply(unsigned int code, unsigned char panic) {
-	// 7-bit setting (between 0 and 127)
-	// MSB is a "panic" bit that engages the high-voltage settings
-	unsigned int code_ASC = ((~code)&0x0000007F) << 5;
-	ASC[30] &= 0xFFFFF017;
-	ASC[30] |= code_ASC;
+    // 7-bit setting (between 0 and 127)
+    // MSB is a "panic" bit that engages the high-voltage settings
+    unsigned int code_ASC = ((~code)&0x0000007F) << 5;
+    ASC[30] &= 0xFFFFF01F;
+    ASC[30] |= code_ASC;
 }
 void set_DIV_supply(unsigned int code, unsigned char panic) {
-	// 7-bit setting (between 0 and 127)
-	// MSB is a "panic" bit that engages the high-voltage settings
-	unsigned int code_ASC = ((~code)&0x0000007F) << 5;
-	ASC[30] &= 0xFFF01FFF;
-	ASC[30] |= code_ASC;
+    // 7-bit setting (between 0 and 127)
+    // MSB is a "panic" bit that engages the high-voltage settings
+    unsigned int code_ASC = ((~code)&0x0000007F) << 13;
+    ASC[31] &= 0xFFF01FFF;
+    ASC[31] |= code_ASC;
 }
 
 void prescaler(int code) {

@@ -240,8 +240,8 @@ void radio_init_tx_BLE(){
 	set_LC_current(127);
 	
 	// Set LDO voltages for PA and LO
-	set_PA_supply(63);
-	set_LO_supply(127,0);
+	set_PA_supply(127);
+	set_LO_supply(63,0);
 	
 	// Ensure cortex control of LO
 	clear_asc_bit(964);

@@ -888,7 +888,7 @@ void OPTICAL_SFD_ISR(){
 	
 	// Enable all counters
 	ANALOG_CFG_REG__0 = 0x3FFF;
-		
+
 	// Don't make updates on the first two executions of this ISR
 	if (optical_cal_iteration > 2) {
 		
