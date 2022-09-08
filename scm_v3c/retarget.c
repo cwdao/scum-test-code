@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <time.h>
 #include <rt_misc.h>
-#include "memory_map.h" 
 
- 
+#define     APB_UART_BASE               0x51000000
+
 #pragma import(__use_no_semihosting)
 
 struct __FILE { 
@@ -50,4 +50,3 @@ void _sys_exit(void) {
     printf("\r\nTEST DONE\r\n");
     while(1); 
 }
-
