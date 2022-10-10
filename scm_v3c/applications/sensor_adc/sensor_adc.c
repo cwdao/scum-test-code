@@ -51,18 +51,20 @@ int main(void) {
     }
 
     // Output the ADC convert signal over GPIO 2 in bank 9.
-    GPO_control(9, 9, 9, 9);
+    GPO_control(6, 6, 6, 6);
     GPI_enables(0x0000);
     GPO_enables(0xFFFF);
 
     for (uint32_t i = 0; i < NUM_ADC_SAMPLES; ++i) {
         // Trigger an ADC read.
         adc_trigger();
+        GPIO_REG__OUTPUT |= 0x0004;
         while (!g_adc_output.valid) {
         }
         if (!g_adc_output.valid) {
             printf("ADC output should be valid.\n");
         }
+        GPIO_REG__OUTPUT &= ~0x0004;
 
         g_adc_samples[i] = (uint8_t)g_adc_output.data;
     }
