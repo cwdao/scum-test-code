@@ -37,19 +37,43 @@ int main(void) {
     crc_check();
     perform_calibration();
 
+    // Output a constant 1.8 V over GPIO 2 and a square wave over GPIO 3.
+    GPO_control(6, 6, 6, 6);
+    GPI_enables(0x0000);
+    GPO_enables(0xFFFF);
+
+    // GPIO 2 is always at 1.8 V.
+    GPIO_REG__OUTPUT |= 0x0004;
+    // GPIO 3 is initially at 0 V.
+    GPIO_REG__OUTPUT &= ~0x0008;
+
+    uint32_t num_samples = 0;
+    bool gpio_high = false;
     while (true) {
         // Trigger an ADC read.
-        printf("Triggering ADC.\n");
+        // printf("Triggering ADC.\n");
         adc_trigger();
         while (!g_adc_output.valid) {
         }
         if (!g_adc_output.valid) {
             printf("ADC output should be valid.\n");
         }
-        printf("ADC output: %u\n", g_adc_output.data);
+        printf("%u\n", g_adc_output.data);
 
         // Wait a bit.
-        for (uint32_t i = 0; i < 1000000; ++i) {
+        for (uint32_t i = 0; i < 30000; i++) {}
+
+        // Toggle GPIO 3 every minute.
+        ++num_samples;
+        if (num_samples == 10 * 60) {
+            gpio_high = !gpio_high;
+            printf("Toggling GPIO 3 to %d.\n", gpio_high);
+            if (gpio_high) {
+                GPIO_REG__OUTPUT |= 0x0008;
+            } else {
+                GPIO_REG__OUTPUT &= ~0x0008;
+            }
+            num_samples = 0;
         }
     }
 }
