@@ -23,6 +23,18 @@ static const adc_config_t g_adc_config = {
     .pga_bypass = true,
 };
 
+static inline void read_adc_output(void) {
+    // Read 10 times and keep the last read.
+    for (uint32_t i = 0; i < 10; ++i) {
+        adc_trigger();
+        while (!g_adc_output.valid) {
+        }
+        // Wait a bit.
+        for (uint32_t j = 0; j < 100; ++j) {
+        }
+    }
+}
+
 int main(void) {
     initialize_mote();
 
@@ -37,16 +49,54 @@ int main(void) {
     crc_check();
     perform_calibration();
 
+    // GPIO 0 is the strobe, and GPIO 1, 2, and 3 control A, B, and C,
+    // respectively.
+    GPO_control(6, 6, 6, 6);
+    GPI_enables(0x0000);
+    GPO_enables(0xFFFF);
+
+    analog_scan_chain_write();
+    analog_scan_chain_load();
+
+    // Lower B and C.
+    GPIO_REG__OUTPUT &= ~0x000C;
+
     while (true) {
-        // Trigger an ADC read.
-        printf("Triggering ADC.\n");
-        adc_trigger();
-        while (!g_adc_output.valid) {
+        // Lower the strobe.
+        GPIO_REG__OUTPUT &= ~0x0001;
+
+        // Lower A.
+        GPIO_REG__OUTPUT &= ~0x0002;
+
+        // Wait a bit.
+        for (uint32_t i = 0; i < 1000; ++i) {
         }
+
+        // Trigger an ADC read.
+        printf("Triggering ADC on D0.\n");
+        read_adc_output();
         if (!g_adc_output.valid) {
             printf("ADC output should be valid.\n");
         }
         printf("ADC output: %u\n", g_adc_output.data);
+
+        // Raise A.
+        GPIO_REG__OUTPUT |= 0x0002;
+
+        // Wait a bit.
+        for (uint32_t i = 0; i < 1000; ++i) {
+        }
+
+        // Trigger an ADC read.
+        printf("Triggering ADC on D1.\n");
+        read_adc_output();
+        if (!g_adc_output.valid) {
+            printf("ADC output should be valid.\n");
+        }
+        printf("ADC output: %u\n", g_adc_output.data);
+
+        // Raise the strobe.
+        GPIO_REG__OUTPUT |= 0x0001;
 
         // Wait for around 1 second.
         for (uint32_t i = 0; i < 700000; ++i) {
