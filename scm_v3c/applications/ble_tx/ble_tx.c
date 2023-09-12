@@ -20,8 +20,8 @@
 // BLE TX tuning code.
 static tuning_code_t g_ble_tx_tuning_code = {
     .coarse = 22,
-    .mid = 23,
-    .fine = 18,
+    .mid = 7,
+    .fine = 0,
 };
 
 // BLE TX trigger.

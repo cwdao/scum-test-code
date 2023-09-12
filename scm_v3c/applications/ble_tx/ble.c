@@ -442,7 +442,7 @@ void ble_transmit(void) {
     for (uint32_t t = 0; t < 1000; ++t) {
     }
 
-    radio_rfOff();
+    // radio_rfOff();
 }
 
 //=========================== private =========================================
