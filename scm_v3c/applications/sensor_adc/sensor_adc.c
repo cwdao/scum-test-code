@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "adc.h"
+#include "gpio.h"
 #include "memory_map.h"
 #include "optical.h"
 #include "scm3c_hw_interface.h"
@@ -39,6 +40,9 @@ static const adc_config_t g_adc_config = {
     .pga_bypass = true,
 };
 
+// GPIO pulse pin.
+static const gpio_e g_gpio_pulse = GPIO_0;
+
 #if ADC_ENABLED
 // ADC data for a single PWM ramp.
 static uint16_t g_adc_data_for_single_ramp[NUM_PULSES_PER_RAMP][2];
@@ -67,7 +71,7 @@ int main(void) {
     analog_scan_chain_load();
 
     // Lower the pulse.
-    GPIO_REG__OUTPUT &= ~0x0001;
+    gpio_set_low(g_gpio_pulse);
 
     while (true) {
         printf("Starting a new PWM ramp.\n");
@@ -79,7 +83,7 @@ int main(void) {
 #endif  // ADC_ENABLED
 
             // Start the pulse.
-            GPIO_REG__OUTPUT |= 0x0001;
+            gpio_set_high(g_gpio_pulse);
 
             // Wait for the pulse width.
             for (size_t j = 0; j < i / FRACTION_INCREMENT_PER_PULSE; ++j) {
@@ -91,7 +95,7 @@ int main(void) {
 #endif  // ADC_ENABLED
 
             // Lower the pulse.
-            GPIO_REG__OUTPUT &= ~0x0001;
+            gpio_set_low(g_gpio_pulse);
 
             // Wait until the next pulse.
             for (size_t j = 0;
