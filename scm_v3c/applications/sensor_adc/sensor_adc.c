@@ -22,8 +22,8 @@
 #define ADC_ENABLED false
 
 // Number of for loop cycles after between sensor measurements.
-// 70000 for loop cycles roughly correspond to 1 second.
-#define NUM_CYCLES_BETWEEN_ADC_READS 1000000
+// 700000 for loop cycles roughly correspond to 1 second.
+#define NUM_CYCLES_BETWEEN_ADC_READS 10000000
 
 // ADC configuration.
 static const adc_config_t g_adc_config = {
