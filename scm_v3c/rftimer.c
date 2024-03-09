@@ -4,7 +4,6 @@
 #include <string.h>
 
 #include "Memory_Map.h"
-#include "gpio.h"
 #include "radio.h"
 #include "scm3c_hw_interface.h"
 
@@ -172,8 +171,7 @@ void delay_milliseconds_synchronous(unsigned int delay_milli, uint8_t id) {
     delay_milliseconds_asynchronous(delay_milli, id);
 
     // do nothing until delay has finished
-    while (delay_completed[id] == false) {
-    }
+    while (delay_completed[id] == false) {}
 }
 
 // ========================== interrupt =======================================
@@ -182,8 +180,6 @@ void rftimer_isr(void) {
     uint16_t interrupt;
     int i = 0;
     int interrupt_id = 1;
-
-    gpio_2_set();
 
     interrupt = RFTIMER_REG__INT;
 
@@ -248,8 +244,6 @@ void rftimer_isr(void) {
     }
 
     RFTIMER_REG__INT_CLEAR = interrupt;
-
-    gpio_2_clr();
 }
 
 void handle_interrupt(uint8_t id) {

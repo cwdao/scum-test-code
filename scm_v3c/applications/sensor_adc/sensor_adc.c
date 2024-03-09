@@ -86,8 +86,7 @@ int main(void) {
             gpio_set_high(g_gpio_pulse);
 
             // Wait for the pulse width.
-            for (size_t j = 0; j < i / FRACTION_INCREMENT_PER_PULSE; ++j) {
-            }
+            for (size_t j = 0; j < i / FRACTION_INCREMENT_PER_PULSE; ++j) {}
 
 #if ADC_ENABLED
             // Read the ADC.
@@ -100,8 +99,7 @@ int main(void) {
             // Wait until the next pulse.
             for (size_t j = 0;
                  j < NUM_CYCLES_PER_PULSE - i / FRACTION_INCREMENT_PER_PULSE;
-                 ++j) {
-            }
+                 ++j) {}
         }
 
 #if ADC_ENABLED
@@ -114,7 +112,6 @@ int main(void) {
 #endif  // ADC_ENABLED
 
         // Wait for the next ADC read.
-        for (size_t i = 0; i < NUM_CYCLES_BETWEEN_ADC_READS; ++i) {
-        }
+        for (size_t i = 0; i < NUM_CYCLES_BETWEEN_ADC_READS; ++i) {}
     }
 }
