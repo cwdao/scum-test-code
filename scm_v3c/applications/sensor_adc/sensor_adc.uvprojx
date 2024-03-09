@@ -386,6 +386,16 @@
               <FileType>1</FileType>
               <FilePath>.\sensor_adc.c</FilePath>
             </File>
+            <File>
+              <FileName>sensor_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\sensor_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>sensor_gpio.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\sensor_gpio.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

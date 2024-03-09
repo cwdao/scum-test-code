@@ -8,6 +8,7 @@
 #include "memory_map.h"
 #include "optical.h"
 #include "scm3c_hw_interface.h"
+#include "sensor_gpio.h"
 
 // Number of pulses per PWM ramp.
 #define NUM_PULSES_PER_RAMP 3500
@@ -62,7 +63,6 @@ int main(void) {
     crc_check();
     perform_calibration();
 
-    // GPIO 0 is the PWM signal.
     GPO_control(6, 6, 6, 6);
     GPI_enables(0x0000);
     GPO_enables(0xFFFF);
@@ -70,8 +70,14 @@ int main(void) {
     analog_scan_chain_write();
     analog_scan_chain_load();
 
-    // Lower the pulse.
-    gpio_set_low(g_gpio_pulse);
+    // Initialize the GPIOs. The RF timer is unused.
+    const sensor_gpio_config_t sensor_gpio_config = {
+        .rftimer_id = 0,
+    };
+    sensor_gpio_init(&sensor_gpio_config);
+
+    // Set the GPIO to high-Z.
+    sensor_gpio_set_high_z(g_gpio_pulse);
 
     while (true) {
         printf("Starting a new PWM ramp.\n");
@@ -83,7 +89,7 @@ int main(void) {
 #endif  // ADC_ENABLED
 
             // Start the pulse.
-            gpio_set_high(g_gpio_pulse);
+            sensor_gpio_set_high(g_gpio_pulse);
 
             // Wait for the pulse width.
             for (size_t j = 0; j < i / FRACTION_INCREMENT_PER_PULSE; ++j) {}
@@ -94,13 +100,16 @@ int main(void) {
 #endif  // ADC_ENABLED
 
             // Lower the pulse.
-            gpio_set_low(g_gpio_pulse);
+            sensor_gpio_set_low(g_gpio_pulse);
 
             // Wait until the next pulse.
             for (size_t j = 0;
                  j < NUM_CYCLES_PER_PULSE - i / FRACTION_INCREMENT_PER_PULSE;
                  ++j) {}
         }
+
+        // Set the GPIO to high-Z.
+        sensor_gpio_set_high_z(g_gpio_pulse);
 
 #if ADC_ENABLED
         // Print the ADC data for the latest PWM ramp.
