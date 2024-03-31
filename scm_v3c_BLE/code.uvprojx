@@ -7,7 +7,7 @@
 
   <Targets>
     <Target>
-      <TargetName>ble_tx</TargetName>
+      <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <pCCUsed>5060960::V5.06 update 7 (build 960)::.\ARMCOMPILER5</pCCUsed>
@@ -48,14 +48,14 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>.\Objects\</OutputDirectory>
-          <OutputName>ble_tx</OutputName>
+          <OutputDirectory>.\</OutputDirectory>
+          <OutputName>code</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
-          <CreateHexFile>1</CreateHexFile>
-          <DebugInformation>1</DebugInformation>
+          <CreateHexFile>0</CreateHexFile>
+          <DebugInformation>0</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
-          <ListingPath>.\Listings\</ListingPath>
+          <ListingPath>.\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>0</CreateBatchFile>
@@ -82,8 +82,8 @@
           <AfterMake>
             <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>1</RunUserProg2>
-            <UserProg1Name>fromelf --bin .\Objects\ble_tx.axf -o .\Objects\ble_tx.bin</UserProg1Name>
-            <UserProg2Name>fromelf -cvf .\Objects\ble_tx.axf -o .\Objects\disasm.txt</UserProg2Name>
+            <UserProg1Name>fromelf --bin code.axf -o code.bin</UserProg1Name>
+            <UserProg2Name>fromelf -cvf code.axf -o disasm.txt</UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopA1X>0</nStopA1X>
@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>../../</IncludePath>
+              <IncludePath></IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -371,7 +371,7 @@
             <TextAddressRange>0x00000000</TextAddressRange>
             <DataAddressRange>0x20000000</DataAddressRange>
             <pXoBase></pXoBase>
-            <ScatterFile>freq_sweep_rx.sct</ScatterFile>
+            <ScatterFile>code.sct</ScatterFile>
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
             <Misc></Misc>
@@ -382,117 +382,77 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>app</GroupName>
-          <Files>
-            <File>
-              <FileName>ble_tx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\ble_tx.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>drv</GroupName>
+          <GroupName>Source Group 1</GroupName>
           <Files>
             <File>
               <FileName>cm0dsasm.s</FileName>
               <FileType>2</FileType>
-              <FilePath>..\..\cm0dsasm.s</FilePath>
+              <FilePath>cm0dsasm.s</FilePath>
+            </File>
+            <File>
+              <FileName>Int_Handlers.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Int_Handlers.h</FilePath>
+            </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>main.c</FilePath>
             </File>
             <File>
               <FileName>Memory_Map.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\..\Memory_Map.h</FilePath>
+              <FilePath>Memory_Map.h</FilePath>
             </File>
             <File>
               <FileName>retarget.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\retarget.c</FilePath>
+              <FilePath>retarget.c</FilePath>
             </File>
             <File>
-              <FileName>optical.c</FileName>
+              <FileName>rf_global_vars.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>rf_global_vars.h</FilePath>
+            </File>
+            <File>
+              <FileName>scm3C_hardware_interface.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\optical.c</FilePath>
+              <FilePath>.\scm3C_hardware_interface.c</FilePath>
             </File>
             <File>
-              <FileName>optical.h</FileName>
+              <FileName>scm3C_hardware_interface.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\..\optical.h</FilePath>
+              <FilePath>.\scm3C_hardware_interface.h</FilePath>
             </File>
             <File>
-              <FileName>radio.c</FileName>
+              <FileName>scm3_hardware_interface.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\radio.c</FilePath>
+              <FilePath>.\scm3_hardware_interface.c</FilePath>
             </File>
             <File>
-              <FileName>radio.h</FileName>
+              <FileName>scm3_hardware_interface.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\..\radio.h</FilePath>
+              <FilePath>.\scm3_hardware_interface.h</FilePath>
             </File>
             <File>
-              <FileName>adc.c</FileName>
+              <FileName>scum_radio_bsp.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\adc.c</FilePath>
+              <FilePath>.\scum_radio_bsp.c</FilePath>
             </File>
             <File>
-              <FileName>adc.h</FileName>
+              <FileName>scum_radio_bsp.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\..\adc.h</FilePath>
+              <FilePath>.\scum_radio_bsp.h</FilePath>
             </File>
             <File>
-              <FileName>gpio.c</FileName>
+              <FileName>scm_ble_functions.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\gpio.c</FilePath>
+              <FilePath>.\scm_ble_functions.c</FilePath>
             </File>
             <File>
-              <FileName>gpio.h</FileName>
+              <FileName>scm_ble_functions.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\..\gpio.h</FilePath>
-            </File>
-            <File>
-              <FileName>uart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\uart.c</FilePath>
-            </File>
-            <File>
-              <FileName>uart.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\uart.h</FilePath>
-            </File>
-            <File>
-              <FileName>rftimer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rftimer.c</FilePath>
-            </File>
-            <File>
-              <FileName>rftimer.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\rftimer.h</FilePath>
-            </File>
-            <File>
-              <FileName>scum_defs.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\scum_defs.h</FilePath>
-            </File>
-            <File>
-              <FileName>scm3c_hw_interface.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\scm3c_hw_interface.h</FilePath>
-            </File>
-            <File>
-              <FileName>scm3c_hw_interface.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\scm3c_hw_interface.c</FilePath>
-            </File>
-            <File>
-              <FileName>ble.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\ble.c</FilePath>
-            </File>
-            <File>
-              <FileName>ble.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\ble.h</FilePath>
+              <FilePath>.\scm_ble_functions.h</FilePath>
             </File>
           </Files>
         </Group>

@@ -8,7 +8,7 @@
   <Extensions>
     <cExt>*.c</cExt>
     <aExt>*.s*; *.src; *.a*</aExt>
-    <oExt>*.obj; *.o</oExt>
+    <oExt>*.obj</oExt>
     <lExt>*.lib</lExt>
     <tExt>*.txt; *.h; *.inc; *.md</tExt>
     <pExt>*.plm</pExt>
@@ -22,7 +22,7 @@
   </DaveTm>
 
   <Target>
-    <TargetName>ble_tx</TargetName>
+    <TargetName>Target 1</TargetName>
     <ToolsetNumber>0x4</ToolsetNumber>
     <ToolsetName>ARM-ADS</ToolsetName>
     <TargetOption>
@@ -45,7 +45,7 @@
         <PageWidth>79</PageWidth>
         <PageLength>66</PageLength>
         <TabStop>8</TabStop>
-        <ListingPath>.\Listings\</ListingPath>
+        <ListingPath>.\</ListingPath>
       </OPTLEX>
       <ListingPage>
         <CreateCListing>1</CreateCListing>
@@ -170,7 +170,7 @@
   </Target>
 
   <Group>
-    <GroupName>app</GroupName>
+    <GroupName>Source Group 1</GroupName>
     <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
@@ -178,260 +178,168 @@
     <File>
       <GroupNumber>1</GroupNumber>
       <FileNumber>1</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>.\ble_tx.c</PathWithFileName>
-      <FilenameWithoutPath>ble_tx.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-  </Group>
-
-  <Group>
-    <GroupName>drv</GroupName>
-    <tvExp>1</tvExp>
-    <tvExpOptDlg>0</tvExpOptDlg>
-    <cbSel>0</cbSel>
-    <RteFlg>0</RteFlg>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>2</FileNumber>
       <FileType>2</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\cm0dsasm.s</PathWithFileName>
+      <PathWithFileName>cm0dsasm.s</PathWithFileName>
       <FilenameWithoutPath>cm0dsasm.s</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>3</FileNumber>
+      <GroupNumber>1</GroupNumber>
+      <FileNumber>2</FileNumber>
       <FileType>5</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\Memory_Map.h</PathWithFileName>
+      <PathWithFileName>Int_Handlers.h</PathWithFileName>
+      <FilenameWithoutPath>Int_Handlers.h</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>1</GroupNumber>
+      <FileNumber>3</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>1</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>main.c</PathWithFileName>
+      <FilenameWithoutPath>main.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>1</GroupNumber>
+      <FileNumber>4</FileNumber>
+      <FileType>5</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>Memory_Map.h</PathWithFileName>
       <FilenameWithoutPath>Memory_Map.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>4</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\retarget.c</PathWithFileName>
-      <FilenameWithoutPath>retarget.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
+      <GroupNumber>1</GroupNumber>
       <FileNumber>5</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\optical.c</PathWithFileName>
-      <FilenameWithoutPath>optical.c</FilenameWithoutPath>
+      <PathWithFileName>retarget.c</PathWithFileName>
+      <FilenameWithoutPath>retarget.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>2</GroupNumber>
+      <GroupNumber>1</GroupNumber>
       <FileNumber>6</FileNumber>
       <FileType>5</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\optical.h</PathWithFileName>
-      <FilenameWithoutPath>optical.h</FilenameWithoutPath>
+      <PathWithFileName>rf_global_vars.h</PathWithFileName>
+      <FilenameWithoutPath>rf_global_vars.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>2</GroupNumber>
+      <GroupNumber>1</GroupNumber>
       <FileNumber>7</FileNumber>
       <FileType>1</FileType>
-      <tvExp>0</tvExp>
+      <tvExp>1</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\radio.c</PathWithFileName>
-      <FilenameWithoutPath>radio.c</FilenameWithoutPath>
+      <PathWithFileName>.\scm3C_hardware_interface.c</PathWithFileName>
+      <FilenameWithoutPath>scm3C_hardware_interface.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>2</GroupNumber>
+      <GroupNumber>1</GroupNumber>
       <FileNumber>8</FileNumber>
       <FileType>5</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\radio.h</PathWithFileName>
-      <FilenameWithoutPath>radio.h</FilenameWithoutPath>
+      <PathWithFileName>.\scm3C_hardware_interface.h</PathWithFileName>
+      <FilenameWithoutPath>scm3C_hardware_interface.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>2</GroupNumber>
+      <GroupNumber>1</GroupNumber>
       <FileNumber>9</FileNumber>
       <FileType>1</FileType>
-      <tvExp>0</tvExp>
+      <tvExp>1</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\adc.c</PathWithFileName>
-      <FilenameWithoutPath>adc.c</FilenameWithoutPath>
+      <PathWithFileName>.\scm3_hardware_interface.c</PathWithFileName>
+      <FilenameWithoutPath>scm3_hardware_interface.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>2</GroupNumber>
+      <GroupNumber>1</GroupNumber>
       <FileNumber>10</FileNumber>
       <FileType>5</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\adc.h</PathWithFileName>
-      <FilenameWithoutPath>adc.h</FilenameWithoutPath>
+      <PathWithFileName>.\scm3_hardware_interface.h</PathWithFileName>
+      <FilenameWithoutPath>scm3_hardware_interface.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>2</GroupNumber>
+      <GroupNumber>1</GroupNumber>
       <FileNumber>11</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\gpio.c</PathWithFileName>
-      <FilenameWithoutPath>gpio.c</FilenameWithoutPath>
+      <PathWithFileName>.\scum_radio_bsp.c</PathWithFileName>
+      <FilenameWithoutPath>scum_radio_bsp.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>2</GroupNumber>
+      <GroupNumber>1</GroupNumber>
       <FileNumber>12</FileNumber>
       <FileType>5</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\gpio.h</PathWithFileName>
-      <FilenameWithoutPath>gpio.h</FilenameWithoutPath>
+      <PathWithFileName>.\scum_radio_bsp.h</PathWithFileName>
+      <FilenameWithoutPath>scum_radio_bsp.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>2</GroupNumber>
+      <GroupNumber>1</GroupNumber>
       <FileNumber>13</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\uart.c</PathWithFileName>
-      <FilenameWithoutPath>uart.c</FilenameWithoutPath>
+      <PathWithFileName>.\scm_ble_functions.c</PathWithFileName>
+      <FilenameWithoutPath>scm_ble_functions.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>2</GroupNumber>
+      <GroupNumber>1</GroupNumber>
       <FileNumber>14</FileNumber>
       <FileType>5</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\uart.h</PathWithFileName>
-      <FilenameWithoutPath>uart.h</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>15</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\rftimer.c</PathWithFileName>
-      <FilenameWithoutPath>rftimer.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>16</FileNumber>
-      <FileType>5</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\rftimer.h</PathWithFileName>
-      <FilenameWithoutPath>rftimer.h</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>17</FileNumber>
-      <FileType>5</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\scum_defs.h</PathWithFileName>
-      <FilenameWithoutPath>scum_defs.h</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>18</FileNumber>
-      <FileType>5</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\scm3c_hw_interface.h</PathWithFileName>
-      <FilenameWithoutPath>scm3c_hw_interface.h</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>19</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\scm3c_hw_interface.c</PathWithFileName>
-      <FilenameWithoutPath>scm3c_hw_interface.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>20</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\ble.c</PathWithFileName>
-      <FilenameWithoutPath>ble.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>21</FileNumber>
-      <FileType>5</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\ble.h</PathWithFileName>
-      <FilenameWithoutPath>ble.h</FilenameWithoutPath>
+      <PathWithFileName>.\scm_ble_functions.h</PathWithFileName>
+      <FilenameWithoutPath>scm_ble_functions.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
