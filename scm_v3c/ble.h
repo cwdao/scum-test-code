@@ -9,10 +9,10 @@
 // BLE packet assembly globals.
 #define BPREAMBLE             0x55
 // Split BACCESS_ADDRESS into bytes to avoid big-/little-endianness issue.
-#define BACCESS_ADDRESS1      0x6B
-#define BACCESS_ADDRESS2      0x7D
-#define BACCESS_ADDRESS3      0x91
-#define BACCESS_ADDRESS4      0x71
+#define BACCESS_ADDRESS1      0x8e
+#define BACCESS_ADDRESS2      0x89
+#define BACCESS_ADDRESS3      0xbe
+#define BACCESS_ADDRESS4      0xd6
 
 #define PDU_HEADER1           0x40
 #define PDU_HEADER2           0xA4 // PDU is 37 bytes long (6 bytes advertiser address + 31 bytes data).

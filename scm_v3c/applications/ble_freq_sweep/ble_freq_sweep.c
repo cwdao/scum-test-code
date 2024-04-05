@@ -27,9 +27,10 @@
 
 // only this coarse settings are swept, 
 // channel 37 and 0 are known within the setting scope of coarse=24
-#define CFG_COARSE          24
+#define CFG_COARSE          21
 
-#define HS_3
+//#define HS_3
+#define TEST
 
 #ifdef TEST
     #define MID_START   0
@@ -95,6 +96,7 @@ int main(void) {
 
     uint32_t calc_crc;
 
+    uint8_t cfg_coarse;
     uint8_t cfg_mid;
     uint8_t cfg_fine;
     
@@ -179,38 +181,41 @@ int main(void) {
         // loop through all configuration
         
         // customize coarse, mid, fine values to change the sweeping range
-        for (cfg_mid=MID_START;cfg_mid<MID_END;cfg_mid++) {
-            for (cfg_fine=0;cfg_fine<32;cfg_fine+=1) {
-                
-                printf(
-                    "coarse=%d, middle=%d, fine=%d\r\n", 
-                    CFG_COARSE,cfg_mid,cfg_fine
-                );
-                
-                for (i=0;i<NUMPKT_PER_CFG;i++) {
+         
+        for (cfg_coarse=23;cfg_coarse<27;cfg_coarse++) {
+            for (cfg_mid=MID_START;cfg_mid<MID_END;cfg_mid++) {
+                for (cfg_fine=0;cfg_fine<32;cfg_fine+=1) {
                     
-                    radio_rfOff();
+                    printf(
+                        "coarse=%d, middle=%d, fine=%d\r\n", 
+                        cfg_coarse,cfg_mid,cfg_fine
+                    );
                     
-                    app_vars.pdu_len = prepare_freq_setting_pdu(CFG_COARSE, cfg_mid, cfg_fine);
-                    ble_prepare_packt(&app_vars.pdu[0], app_vars.pdu_len);
-                    
-                    LC_FREQCHANGE(CFG_COARSE, cfg_mid, cfg_fine);
-                    
-                    delay_lc_setup();
-                    
-                    ble_load_tx_arb_fifo();
-                    radio_txEnable();
-                    
-                    delay_tx();
-                    
-                    ble_txNow_tx_arb_fifo();
-                    
-                    // need to make sure the tx is done before 
-                    // starting a new transmission
-                    
-                    rftimer_setCompareIn(rftimer_readCounter()+TIMER_PERIOD);
-                    app_vars.sendDone = false;
-                    while (app_vars.sendDone==false);
+                    for (i=0;i<NUMPKT_PER_CFG;i++) {
+                        
+                        radio_rfOff();
+                        
+                        app_vars.pdu_len = prepare_freq_setting_pdu(cfg_mid, cfg_mid, cfg_fine);
+                        ble_prepare_packt(&app_vars.pdu[0], app_vars.pdu_len);
+                        
+                        LC_FREQCHANGE(cfg_mid, cfg_mid, cfg_fine);
+                        
+                        delay_lc_setup();
+                        
+                        ble_load_tx_arb_fifo();
+                        radio_txEnable();
+                        
+                        delay_tx();
+                        
+                        ble_txNow_tx_arb_fifo();
+                        
+                        // need to make sure the tx is done before 
+                        // starting a new transmission
+                        
+                        rftimer_setCompareIn(rftimer_readCounter()+TIMER_PERIOD);
+                        app_vars.sendDone = false;
+                        while (app_vars.sendDone==false);
+                    }
                 }
             }
         }
