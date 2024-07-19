@@ -223,13 +223,11 @@ def program_cortex(teensy_port="COM13", scum_port="COM18", binary_image="./code.
         send_bin_packet(teensy_ser, chunk)
 
     # Wait for the final confirmation
-    resp = teensy_ser.readline()
-    while(len(resp) == 0):
+    while len(resp := teensy_ser.readline()) == 0:
         print("Waiting for reply...")
-        resp = teensy_ser.readline()
-
+    
     print(resp)
-    if(resp != b'SRAM Transfer Complete\r\n'):
+    if resp != b'SRAM Transfer Complete\r\n':
         raise ValueError("Teensy did not report ready after sending data")
 
     time.sleep(1)
