@@ -131,3 +131,6 @@ Objects
 
 # DS Store
 .DS_Store
+
+# VS Code
+.vscode/
