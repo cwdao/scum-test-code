@@ -9,6 +9,7 @@
 // BLE packet assembly globals.
 #define BPREAMBLE             0x55
 // Split BACCESS_ADDRESS into bytes to avoid big-/little-endianness issue.
+// 广播包的access address是唯一的，所有BLE设备的广播帧都使用这个地址
 #define BACCESS_ADDRESS1      0x8e
 #define BACCESS_ADDRESS2      0x89
 #define BACCESS_ADDRESS3      0xbe
