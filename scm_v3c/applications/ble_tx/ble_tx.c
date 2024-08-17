@@ -13,14 +13,15 @@
 
 // If true, sweep through all fine codes.
 #define BLE_TX_SWEEP_FINE true
+//  #define BLE_TX_SWEEP_FINE false
 
 // BLE TX period in milliseconds.
 #define BLE_TX_PERIOD_MS 1000  // milliseconds
 
 // BLE TX tuning code.
 static tuning_code_t g_ble_tx_tuning_code = {
-    .coarse = 22,
-    .mid = 7,
+    .coarse = 24,
+    .mid = 01,
     .fine = 0,
 };
 
