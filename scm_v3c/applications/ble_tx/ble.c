@@ -122,8 +122,8 @@ void ble_init(void) {
 
     // Set appearance to Ambient_light_sensor
     ble_vars.appearance_en = true;
-    ble_vars.appearance[0] = 0x4b;
-    ble_vars.appearance[1] = 0x05;
+    ble_vars.appearance[0] = 0xc2;
+    ble_vars.appearance[1] = 0x03;
 }
 
 void ble_generate_packet(void) {
