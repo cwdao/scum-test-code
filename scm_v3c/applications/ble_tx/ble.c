@@ -22,10 +22,12 @@ typedef struct {
     bool counters_tx_en;
     bool temperature_tx_en;
     bool data_tx_en;
+    bool appearance_en;
 
     // BLE packet data.
     char name[BLE_SHORT_NAME_LENGTH];
     tuning_code_t tuning_code;
+    uint8_t appearance[BLE_GAP_APPEARANCE_LENGTH];
     uint32_t count_2M;
     uint32_t count_32k;
     double temperature;
@@ -117,6 +119,11 @@ void ble_init(void) {
     ble_vars.name[2] = 'U';
     ble_vars.name[3] = 'M';
     ble_vars.name[4] = '3';
+
+    // Set appearance to Ambient_light_sensor
+    ble_vars.appearance_en = true;
+    ble_vars.appearance[0] = 0x4b;
+    ble_vars.appearance[1] = 0x05;
 }
 
 void ble_generate_packet(void) {
@@ -208,6 +215,15 @@ void ble_generate_packet(void) {
 
         for (k = 0; k < BLE_CUSTOM_DATA_LENGTH; ++k) {
             pdu_crc[j++] = flipChar(ble_vars.data[k]);
+        }
+    }
+
+    if (ble_vars.appearance_en) {
+        pdu_crc[j++] = BLE_GAP_APPEARANCE_HEADER;
+        pdu_crc[j++] = BLE_GAP_APPEARANCE_GAP_CODE;
+
+        for (k = 0; k < BLE_GAP_APPEARANCE_LENGTH; ++k) {
+            pdu_crc[j++] = flipChar(ble_vars.appearance[k]);
         }
     }
 

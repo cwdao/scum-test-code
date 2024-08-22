@@ -26,6 +26,11 @@
 #define BLE_SHORT_NAME_HEADER 0x60
 #define BLE_SHORT_NAME_GAP_CODE 0x10
 
+// Appearance
+#define BLE_GAP_APPEARANCE_LENGTH 2 
+#define BLE_GAP_APPEARANCE_HEADER 0xC0 // 1byte GAP code + 2 byte data and inverted
+#define BLE_GAP_APPEARANCE_GAP_CODE 0x98 //(0x19 but inverted)
+
 // Tuning code.
 #define BLE_TUNING_CODE_LENGTH 2
 // The tuning code is 3 bytes long (1 byte GAP code + 2 bytes data).
