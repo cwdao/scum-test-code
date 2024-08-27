@@ -124,6 +124,13 @@ void ble_init(void) {
     ble_vars.appearance_en = true;
     ble_vars.appearance[0] = 0xc2;
     ble_vars.appearance[1] = 0x03;
+
+    //test all pdu units
+    ble_vars.temperature_tx_en = true;
+    ble_vars.tuning_code_tx_en = true;
+    ble_vars.counters_tx_en = true;
+    // ble_vars.data_tx_en = true;
+
 }
 
 void ble_generate_packet(void) {
@@ -163,6 +170,15 @@ void ble_generate_packet(void) {
 
         for (k = 0; k < BLE_SHORT_NAME_LENGTH; ++k) {
             pdu_crc[j++] = flipChar(ble_vars.name[k]);
+        }
+    }
+
+    if (ble_vars.appearance_en) {
+        pdu_crc[j++] = BLE_GAP_APPEARANCE_HEADER;
+        pdu_crc[j++] = BLE_GAP_APPEARANCE_GAP_CODE;
+
+        for (k = 0; k < BLE_GAP_APPEARANCE_LENGTH; ++k) {
+            pdu_crc[j++] = flipChar(ble_vars.appearance[k]);
         }
     }
 
@@ -215,15 +231,6 @@ void ble_generate_packet(void) {
 
         for (k = 0; k < BLE_CUSTOM_DATA_LENGTH; ++k) {
             pdu_crc[j++] = flipChar(ble_vars.data[k]);
-        }
-    }
-
-    if (ble_vars.appearance_en) {
-        pdu_crc[j++] = BLE_GAP_APPEARANCE_HEADER;
-        pdu_crc[j++] = BLE_GAP_APPEARANCE_GAP_CODE;
-
-        for (k = 0; k < BLE_GAP_APPEARANCE_LENGTH; ++k) {
-            pdu_crc[j++] = flipChar(ble_vars.appearance[k]);
         }
     }
 
