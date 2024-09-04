@@ -77,6 +77,7 @@ signed short cdr_tau_history[11] = {0};
     0xFF  // A packet of length 255 is impossible by both IEEE 802.15.4 and BLE,
           // and is used to indicate that the packet length is not known in
           // advance.
+#define DIV_ON // include if you want to calibrate LC (jacob)
 
 //=========================== variables =======================================
 
