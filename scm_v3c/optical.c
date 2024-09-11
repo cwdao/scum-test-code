@@ -9,7 +9,7 @@
 
 //=========================== defines =========================================
 
-#define LC_CAL_COARSE_MIN    24
+#define LC_CAL_COARSE_MIN    19
 #define LC_CAL_COARSE_MAX    25
 #define LC_CAL_MID_MIN       0
 #define LC_CAL_MID_MAX       31
@@ -251,6 +251,7 @@ void optical_sfd_isr(){
             }
 
             printf("count_LC: %u, LC_target: %u, LC_diff: %u\r\n", count_LC, optical_vars.LC_target, optical_vars.cal_LC_diff);
+            printf("coarse: %u, mid: %u, fine: %u\n", optical_vars.LC_coarse, optical_vars.LC_mid, optical_vars.LC_fine);
 
             ++optical_vars.cal_LC_fine;
             if (optical_vars.cal_LC_fine > LC_CAL_FINE_MAX) {
