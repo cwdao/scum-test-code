@@ -15,6 +15,7 @@
 #define LC_CAL_MID_MAX 31
 #define LC_CAL_FINE_MIN 15
 #define LC_CAL_FINE_MAX 15
+#define MIN_LC_DIFF 100
 
 //=========================== variables =======================================
 
@@ -274,7 +275,7 @@ void optical_sfd_isr()
             printf("count_LC: %u, LC_target: %u, LC_diff: %u\r\n", count_LC, optical_vars.LC_target, optical_vars.cal_LC_diff);
             printf("coarse: %u, mid: %u, fine: %u\n", optical_vars.LC_coarse, optical_vars.LC_mid, optical_vars.LC_fine);
             // why the stop codition is not related to LC_diff? I find that the mid is correct enought when LC_diff is smaller than 100.
-            if (optical_vars.cal_LC_diff < 100)
+            if (optical_vars.cal_LC_diff < MIN_LC_DIFF)
             {
                 optical_vars.optical_LC_cal_finished = true;
             }
