@@ -14,6 +14,7 @@
 // If true, sweep through all fine codes.
 #define BLE_TX_SWEEP_FINE true
 //  #define BLE_TX_SWEEP_FINE false
+#define BLE_CALIBRATE_LC true
 
 // BLE TX period in milliseconds.
 #define BLE_TX_PERIOD_MS 1000  // milliseconds
@@ -28,6 +29,8 @@ static tuning_code_t g_ble_tx_tuning_code = {
 // BLE TX trigger.
 static bool g_ble_tx_trigger = true;
 
+extern optical_vars_t optical_vars;
+
 // Transmit BLE packets.
 static inline void ble_tx_trigger(void) {
 #if BLE_TX_SWEEP_FINE
@@ -40,8 +43,7 @@ static inline void ble_tx_trigger(void) {
                g_ble_tx_tuning_code.fine);
 
         // Wait for the frequency to settle.
-        for (uint32_t t = 0; t < 5000; ++t)
-            ;
+        for (uint32_t t = 0; t < 5000; ++t);
 
         ble_transmit();
     }
@@ -52,8 +54,7 @@ static inline void ble_tx_trigger(void) {
            g_ble_tx_tuning_code.fine);
 
     // Wait for frequency to settle.
-    for (uint32_t t = 0; t < 5000; ++t)
-        ;
+    for (uint32_t t = 0; t < 5000; ++t);
 
     ble_transmit();
 #endif  // BLE_TX_SWEEP_FINE
@@ -82,6 +83,43 @@ int main(void) {
 
     crc_check();
     perform_calibration();
+
+#if BLE_CALIBRATE_LC
+  optical_vars.optical_cal_finished = false;
+    optical_enableLCCalibration();
+
+    // Turn on LO, DIV, PA, and IF
+    ANALOG_CFG_REG__10 = 0x78;
+
+    // Turn off polyphase and disable mixer
+    ANALOG_CFG_REG__16 = 0x6;
+
+    // For TX, LC target freq = 2.402G - 0.25M = 2.40175 GHz.
+    optical_setLCTarget(250182);
+#endif
+
+    // Enable optical SFD interrupt for optical calibration
+    optical_enable();
+
+    // Wait for optical cal to finish
+    while (!optical_getCalibrationFinished());
+
+    printf("Cal complete\r\n");
+
+    // Disable static divider to save power
+    divProgram(480, 0, 0);
+
+    // Configure coarse, mid, and fine codes for TX.
+#if BLE_CALIBRATE_LC
+    g_ble_tx_tuning_code.coarse = optical_getLCCoarse();
+    g_ble_tx_tuning_code.mid = optical_getLCMid();
+    g_ble_tx_tuning_code.fine = optical_getLCFine();
+#else
+    // CHANGE THESE VALUES AFTER LC CALIBRATION.
+    app_vars.tx_coarse = 23;
+    app_vars.tx_mid = 11;
+    app_vars.tx_fine = 23;
+#endif
 
     // Generate a BLE packet.
     ble_generate_packet();
